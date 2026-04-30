@@ -166,6 +166,21 @@
             text-align: center;
             min-height: 20px;
         }
+        .upload-warning {
+            display: none;
+            margin-top: 14px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 8px;
+            background: rgba(250, 204, 21, 0.22);
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .upload-warning.active {
+            display: block;
+        }
         .loading-state {
             display: flex;
             align-items: center;
@@ -263,6 +278,9 @@
         <img id="imagePreview" class="image-preview" alt="Preview ภาพผลการเดิน-วิ่ง">
 
         <button id="submitResult" class="submit-button" type="button" disabled>ส่งผล</button>
+        <div id="uploadWarning" class="upload-warning" role="alert">
+            กำลังส่งผล กรุณาอย่าปิดหรือรีเฟรชหน้าเว็บจนกว่าจะส่งเสร็จ ไม่เช่นนั้นข้อมูลอาจส่งไม่สำเร็จ
+        </div>
         <div id="statusMessage" class="status-message"></div>
     </main>
 
@@ -276,9 +294,11 @@
         const imagePreview = document.getElementById('imagePreview');
         const submitResult = document.getElementById('submitResult');
         const statusMessage = document.getElementById('statusMessage');
+        const uploadWarning = document.getElementById('uploadWarning');
         const loadingState = document.getElementById('loadingState');
         const loadingText = document.getElementById('loadingText');
         let imagePreviewUrl = '';
+        let isSubmitting = false;
 
         let data = [];
 
@@ -400,6 +420,22 @@
             });
         }
 
+        window.addEventListener('beforeunload', function(event) {
+            if (!isSubmitting) {
+                return;
+            }
+
+            event.preventDefault();
+            event.returnValue = '';
+        });
+
+        function setSubmittingState(isActive) {
+            isSubmitting = isActive;
+            submitResult.disabled = isActive;
+            submitResult.textContent = isActive ? 'กำลังอัปโหลด...' : 'ส่งผล';
+            uploadWarning.classList.toggle('active', isActive);
+        }
+
         submitResult.addEventListener('click', async function() {
             const selectedTeam = teamSelect.value;
             const selectedPlayer = playerSelect.value;
@@ -431,9 +467,8 @@
                 return;
             }
 
-            submitResult.disabled = true;
-            submitResult.textContent = 'กำลังอัปโหลด...';
-            statusMessage.textContent = '';
+            setSubmittingState(true);
+            statusMessage.textContent = 'กำลังส่งข้อมูล กรุณารอสักครู่';
 
             try {
                 const imageData = await fileToBase64(imageFile);
@@ -467,14 +502,12 @@
                     statusMessage.textContent = 'ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่';
                 })
                 .finally(() => {
-                    submitResult.disabled = false;
-                    submitResult.textContent = 'ส่งผล';
+                    setSubmittingState(false);
                 });
             } catch (error) {
                 console.error('Error reading image:', error);
                 statusMessage.textContent = 'อ่านไฟล์ภาพไม่สำเร็จ กรุณาลองใหม่';
-                submitResult.disabled = false;
-                submitResult.textContent = 'ส่งผล';
+                setSubmittingState(false);
             }
         });
     </script>
