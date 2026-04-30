@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>อันดับทีม</title>
+    <title>รายชื่อผู้เล่นในทีม</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -59,19 +59,27 @@
         }
         h1 {
             text-align: center;
-            margin-bottom: 24px;
+            margin: 0 0 10px;
             font-size: 2em;
+        }
+        .team-title {
+            margin-bottom: 22px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            opacity: 0.95;
+            overflow-wrap: anywhere;
         }
         .status-message {
             margin: 12px 0;
             text-align: center;
             min-height: 22px;
         }
-        .rank-list {
+        .player-list {
             display: grid;
             gap: 10px;
         }
-        .rank-row {
+        .player-row {
             display: grid;
             grid-template-columns: 56px 1fr 120px;
             align-items: center;
@@ -90,48 +98,71 @@
             color: #333;
             font-weight: bold;
         }
-        .team-name {
+        .player-name {
             font-weight: bold;
             overflow-wrap: anywhere;
         }
-        .team-name a {
+        .player-name a {
             color: white;
             text-decoration: none;
         }
-        .team-name a:hover {
+        .player-name a:hover {
             text-decoration: underline;
         }
         .distance {
             text-align: right;
             font-weight: bold;
         }
-        .refresh-button {
-            display: block;
-            width: 100%;
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
             margin-top: 18px;
+        }
+        .button {
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
             padding: 12px;
             border: none;
             border-radius: 5px;
-            background: #22c55e;
             color: white;
             font-size: 16px;
             font-weight: bold;
+            text-align: center;
+            text-decoration: none;
             cursor: pointer;
+        }
+        .refresh-button {
+            background: #22c55e;
         }
         .refresh-button:hover {
             background: #16a34a;
+        }
+        .back-button {
+            background: rgba(255, 255, 255, 0.18);
+        }
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.28);
         }
         @media (max-width: 768px) {
             body {
                 padding: 10px;
             }
+            .nav-menu,
+            .action-row {
+                flex-direction: column;
+            }
             .nav-menu {
                 align-items: stretch;
-                flex-direction: column;
             }
             .nav-links {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
+            }
+            .action-row {
+                display: grid;
+                grid-template-columns: 1fr;
             }
             .container {
                 padding: 15px;
@@ -139,7 +170,7 @@
             h1 {
                 font-size: 1.5em;
             }
-            .rank-row {
+            .player-row {
                 grid-template-columns: 48px 1fr;
             }
             .distance {
@@ -159,102 +190,104 @@
     </nav>
 
     <main class="container">
-        <h1>อันดับทีมสะสมระยะทาง</h1>
-        <div id="statusMessage" class="status-message">กำลังโหลดอันดับทีม...</div>
-        <div id="rankList" class="rank-list"></div>
-        <button id="refreshButton" class="refresh-button" type="button">โหลดใหม่</button>
+        <h1>รายชื่อผู้เล่น</h1>
+        <div id="teamTitle" class="team-title"></div>
+        <div id="statusMessage" class="status-message">กำลังโหลดข้อมูลผู้เล่น...</div>
+        <div id="playerList" class="player-list"></div>
+        <div class="action-row">
+            <a class="button back-button" href="team_rank.html">กลับหน้าอันดับทีม</a>
+            <button id="refreshButton" class="button refresh-button" type="button">โหลดใหม่</button>
+        </div>
     </main>
 
     <script>
         const apiUrl = 'https://script.google.com/macros/s/AKfycbyLVYoa55lRiTeAAFsInE8OmwonTftQCquQF4eG6LiZvJ0IYVgIGR2MUqXj-p31vSndTQ/exec';
-        const rankList = document.getElementById('rankList');
+        const teamTitle = document.getElementById('teamTitle');
+        const playerList = document.getElementById('playerList');
         const statusMessage = document.getElementById('statusMessage');
         const refreshButton = document.getElementById('refreshButton');
+        const selectedTeam = new URLSearchParams(window.location.search).get('team') || '';
 
         function toNumber(value) {
             const number = Number(value);
             return Number.isFinite(number) ? number : 0;
         }
 
-        function normalizeRankData(rows) {
-            const totals = new Map();
-
-            rows.forEach(row => {
-                const teamName = row.team_run || row.team_name || row.team || row.Team || row['Team Name'];
-                const totalDistance = row.SUM_kg || row.sum_kg || row.total_distance || row.totalDistance || row.distance_total || row.distance;
-
-                if (!teamName) {
-                    return;
-                }
-
-                totals.set(teamName, (totals.get(teamName) || 0) + toNumber(totalDistance));
-            });
-
-            return Array.from(totals, ([team_name, total_distance]) => ({
-                team_name,
-                total_distance
-            })).sort((a, b) => b.total_distance - a.total_distance);
+        function normalizePlayerData(rows) {
+            return rows.map(row => ({
+                player: row.player || row.player_name || row.Player || row['Player Name'] || '',
+                total_distance: toNumber(row.total_distance || row.totalDistance || row.SUM_kg || row.sum_kg || row.distance)
+            })).filter(row => row.player)
+              .sort((a, b) => b.total_distance - a.total_distance);
         }
 
-        function renderRankings(rankings) {
-            rankList.innerHTML = '';
+        function renderPlayers(players) {
+            playerList.innerHTML = '';
 
-            if (!rankings.length) {
-                statusMessage.textContent = 'ยังไม่มีข้อมูลอันดับทีม';
+            if (!players.length) {
+                statusMessage.textContent = 'ยังไม่มีข้อมูลผู้เล่นในทีมนี้';
                 return;
             }
 
             statusMessage.textContent = '';
 
-            rankings.forEach((team, index) => {
+            players.forEach((player, index) => {
                 const row = document.createElement('div');
-                row.className = 'rank-row';
+                row.className = 'player-row';
 
                 const rankNumber = document.createElement('div');
                 rankNumber.className = 'rank-number';
                 rankNumber.textContent = index + 1;
 
-                const teamName = document.createElement('div');
-                teamName.className = 'team-name';
+                const playerName = document.createElement('div');
+                playerName.className = 'player-name';
 
-                const teamLink = document.createElement('a');
-                teamLink.href = 'team_player.html?team=' + encodeURIComponent(team.team_name);
-                teamLink.textContent = team.team_name;
-                teamName.appendChild(teamLink);
+                const playerLink = document.createElement('a');
+                playerLink.href = 'player_detail.html?team=' + encodeURIComponent(selectedTeam) + '&player=' + encodeURIComponent(player.player);
+                playerLink.textContent = player.player;
+                playerName.appendChild(playerLink);
 
                 const distance = document.createElement('div');
                 distance.className = 'distance';
-                distance.textContent = toNumber(team.total_distance).toFixed(2) + ' km';
+                distance.textContent = toNumber(player.total_distance).toFixed(2) + ' km';
 
                 row.appendChild(rankNumber);
-                row.appendChild(teamName);
+                row.appendChild(playerName);
                 row.appendChild(distance);
-                rankList.appendChild(row);
+                playerList.appendChild(row);
             });
         }
 
-        function loadRankings() {
-            statusMessage.textContent = 'กำลังโหลดอันดับทีม...';
-            rankList.innerHTML = '';
+        function loadPlayers() {
+            if (!selectedTeam) {
+                teamTitle.textContent = 'ไม่พบชื่อทีม';
+                statusMessage.textContent = 'กรุณากลับไปเลือกทีมจากหน้าอันดับทีม';
+                refreshButton.disabled = true;
+                return;
+            }
+
+            teamTitle.textContent = selectedTeam;
+            statusMessage.textContent = 'กำลังโหลดข้อมูลผู้เล่น...';
+            playerList.innerHTML = '';
             refreshButton.disabled = true;
 
-            fetch(apiUrl + '?action=team_rank')
+            fetch(apiUrl + '?action=team_player&team=' + encodeURIComponent(selectedTeam))
                 .then(response => response.json())
                 .then(jsonData => {
-                    const rows = Array.isArray(jsonData) ? jsonData : jsonData.data || jsonData.rankings || [];
-                    renderRankings(normalizeRankData(rows));
+                    const rows = Array.isArray(jsonData) ? jsonData : jsonData.data || jsonData.players || [];
+                    renderPlayers(normalizePlayerData(rows));
                 })
                 .catch(error => {
-                    console.error('Error loading team rankings:', error);
-                    statusMessage.textContent = 'โหลดอันดับทีมไม่สำเร็จ กรุณาลองใหม่';
+                    console.error('Error loading team players:', error);
+                    statusMessage.textContent = 'โหลดข้อมูลผู้เล่นไม่สำเร็จ กรุณาลองใหม่';
                 })
                 .finally(() => {
                     refreshButton.disabled = false;
                 });
         }
 
-        refreshButton.addEventListener('click', loadRankings);
-        loadRankings();
+        refreshButton.addEventListener('click', loadPlayers);
+        loadPlayers();
     </script>
 </body>
 </html>

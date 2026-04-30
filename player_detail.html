@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ประวัติผู้เล่น</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            max-width: 820px;
+            margin: 0 auto 20px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .nav-brand {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+        .nav-link {
+            padding: 10px 14px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .nav-link.active {
+            background: white;
+            color: #333;
+        }
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin: 0 0 10px;
+            font-size: 2em;
+        }
+        .player-title {
+            margin-bottom: 22px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            opacity: 0.95;
+            overflow-wrap: anywhere;
+        }
+        .status-message {
+            margin: 12px 0;
+            text-align: center;
+            min-height: 22px;
+        }
+        .history-list {
+            display: grid;
+            gap: 10px;
+        }
+        .history-row {
+            display: grid;
+            grid-template-columns: 1fr 120px 110px;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.16);
+        }
+        .date {
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+        .distance {
+            text-align: right;
+            font-weight: bold;
+        }
+        .image-link {
+            display: block;
+            padding: 9px 10px;
+            border-radius: 5px;
+            background: white;
+            color: #333;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .image-link.disabled {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.72);
+            pointer-events: none;
+        }
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .button {
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .refresh-button {
+            background: #22c55e;
+        }
+        .refresh-button:hover {
+            background: #16a34a;
+        }
+        .back-button {
+            background: rgba(255, 255, 255, 0.18);
+        }
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.28);
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .nav-menu,
+            .action-row {
+                flex-direction: column;
+            }
+            .nav-menu {
+                align-items: stretch;
+            }
+            .nav-links {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+            .action-row {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .history-row {
+                grid-template-columns: 1fr;
+            }
+            .distance {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-menu" aria-label="Main navigation">
+        <a class="nav-brand" href="index.html">MT Team Run</a>
+        <div class="nav-links">
+            <a class="nav-link" href="index.html">ส่งผล</a>
+            <a class="nav-link active" href="team_rank.html">อันดับทีม</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>ประวัติผู้เล่น</h1>
+        <div id="playerTitle" class="player-title"></div>
+        <div id="statusMessage" class="status-message">กำลังโหลดประวัติ...</div>
+        <div id="historyList" class="history-list"></div>
+        <div class="action-row">
+            <a id="backLink" class="button back-button" href="team_rank.html">กลับรายชื่อผู้เล่น</a>
+            <button id="refreshButton" class="button refresh-button" type="button">โหลดใหม่</button>
+        </div>
+    </main>
+
+    <script>
+        const apiUrl = 'https://script.google.com/macros/s/AKfycbyLVYoa55lRiTeAAFsInE8OmwonTftQCquQF4eG6LiZvJ0IYVgIGR2MUqXj-p31vSndTQ/exec';
+        const playerTitle = document.getElementById('playerTitle');
+        const historyList = document.getElementById('historyList');
+        const statusMessage = document.getElementById('statusMessage');
+        const refreshButton = document.getElementById('refreshButton');
+        const backLink = document.getElementById('backLink');
+        const params = new URLSearchParams(window.location.search);
+        const selectedTeam = params.get('team') || '';
+        const selectedPlayer = params.get('player') || '';
+
+        function toNumber(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number : 0;
+        }
+
+        function toDate(value) {
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? null : date;
+        }
+
+        function formatDate(value) {
+            const date = toDate(value);
+
+            if (!date) {
+                return value || '-';
+            }
+
+            return date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function normalizeHistoryData(rows) {
+            return rows.map(row => ({
+                timestamp: row.timestamp || row.Timestamp || row.date || row.Date || '',
+                distance: toNumber(row.distance || row.Distance || row.total_distance || row.SUM_kg),
+                image_url: row.image_url || row.imageUrl || row.image || row.Image || ''
+            })).sort((a, b) => {
+                const dateA = toDate(a.timestamp);
+                const dateB = toDate(b.timestamp);
+
+                return (dateB ? dateB.getTime() : 0) - (dateA ? dateA.getTime() : 0);
+            });
+        }
+
+        function renderHistory(items) {
+            historyList.innerHTML = '';
+
+            if (!items.length) {
+                statusMessage.textContent = 'ยังไม่มีประวัติระยะทางของผู้เล่นคนนี้';
+                return;
+            }
+
+            statusMessage.textContent = '';
+
+            items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'history-row';
+
+                const date = document.createElement('div');
+                date.className = 'date';
+                date.textContent = formatDate(item.timestamp);
+
+                const distance = document.createElement('div');
+                distance.className = 'distance';
+                distance.textContent = toNumber(item.distance).toFixed(2) + ' km';
+
+                const imageLink = document.createElement('a');
+                imageLink.className = 'image-link';
+                imageLink.textContent = item.image_url ? 'ดูรูปภาพ' : 'ไม่มีรูป';
+
+                if (item.image_url) {
+                    imageLink.href = item.image_url;
+                    imageLink.target = '_blank';
+                    imageLink.rel = 'noopener';
+                } else {
+                    imageLink.href = '#';
+                    imageLink.classList.add('disabled');
+                }
+
+                row.appendChild(date);
+                row.appendChild(distance);
+                row.appendChild(imageLink);
+                historyList.appendChild(row);
+            });
+        }
+
+        function loadHistory() {
+            if (!selectedTeam || !selectedPlayer) {
+                playerTitle.textContent = 'ไม่พบข้อมูลผู้เล่น';
+                statusMessage.textContent = 'กรุณากลับไปเลือกผู้เล่นจากหน้ารายชื่อผู้เล่น';
+                refreshButton.disabled = true;
+                return;
+            }
+
+            playerTitle.textContent = selectedPlayer + ' - ' + selectedTeam;
+            backLink.href = 'team_player.html?team=' + encodeURIComponent(selectedTeam);
+            statusMessage.textContent = 'กำลังโหลดประวัติ...';
+            historyList.innerHTML = '';
+            refreshButton.disabled = true;
+
+            fetch(apiUrl + '?action=player_detail&team=' + encodeURIComponent(selectedTeam) + '&player=' + encodeURIComponent(selectedPlayer))
+                .then(response => response.json())
+                .then(jsonData => {
+                    const rows = Array.isArray(jsonData) ? jsonData : jsonData.data || jsonData.history || [];
+                    renderHistory(normalizeHistoryData(rows));
+                })
+                .catch(error => {
+                    console.error('Error loading player history:', error);
+                    statusMessage.textContent = 'โหลดประวัติผู้เล่นไม่สำเร็จ กรุณาลองใหม่';
+                })
+                .finally(() => {
+                    refreshButton.disabled = false;
+                });
+        }
+
+        refreshButton.addEventListener('click', loadHistory);
+        loadHistory();
+    </script>
+</body>
+</html>
