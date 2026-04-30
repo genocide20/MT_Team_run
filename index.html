@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บันทึกระยะทาง</title>
+    <title>เดิน-วิ่ง ทีม</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -26,31 +26,111 @@
             margin-bottom: 30px;
             font-size: 2em;
         }
-        .form-group {
-            margin-bottom: 20px;
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+        .nav-link {
+            flex: 1;
+            padding: 12px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .nav-link.active {
+            background: white;
+            color: #333;
         }
         label {
             display: block;
-            margin-bottom: 5px;
+            margin: 0 0 5px;
             font-weight: bold;
         }
-        select {
+        select,
+        input[type="number"] {
             width: 100%;
+            box-sizing: border-box;
             padding: 12px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
             background: white;
             color: #333;
+            margin-bottom: 20px;
         }
         select:disabled {
             background: #f0f0f0;
             color: #999;
         }
-        .running-icon {
-            text-align: center;
-            font-size: 3em;
+        .unit-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin-bottom: 20px;
+            background: white;
+            border-radius: 5px;
+            padding-right: 12px;
+        }
+        .unit-input input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .unit-input span {
+            color: #333;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .upload-button,
+        .submit-button {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+        }
+        .upload-button {
+            background: white;
+            color: #333;
+        }
+        .submit-button {
+            margin-top: 24px;
+            background: #22c55e;
+            color: white;
+        }
+        .submit-button:hover {
+            background: #16a34a;
+        }
+        .file-name {
+            margin-top: 8px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .image-preview {
+            display: none;
+            width: 100%;
+            max-height: 320px;
+            margin-top: 12px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.14);
+        }
+        .status-message {
+            margin-top: 12px;
+            font-size: 14px;
+            text-align: center;
+            min-height: 20px;
         }
         @media (max-width: 768px) {
             body {
@@ -62,29 +142,61 @@
             h1 {
                 font-size: 1.5em;
             }
+            .nav-menu {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Select Team and Player</h1>
-    <label for="teamSelect">Choose Team:</label>
-    <select id="teamSelect">
-        <option value="">Select a team</option>
-    </select>
-    
-    <label for="playerSelect">Choose Player:</label>
-    <select id="playerSelect" disabled>
-        <option value="">Select a player</option>
-    </select>
+    <nav class="nav-menu">
+        <a class="nav-link active" href="index.html">ส่งผล</a>
+        <a class="nav-link" href="team_rank.html">อันดับทีม</a>
+    </nav>
+
+    <main class="container">
+        <h1>เดิน-วิ่ง ทีม</h1>
+
+        <label for="teamSelect">เลือกทีม:</label>
+        <select id="teamSelect">
+            <option value="">Select a team</option>
+        </select>
+
+        <label for="playerSelect">เลือกผู้เล่น:</label>
+        <select id="playerSelect" disabled>
+            <option value="">Select a player</option>
+        </select>
+
+        <label for="distanceInput">ระยะทาง:</label>
+        <div class="unit-input">
+            <input id="distanceInput" type="number" min="0" step="0.01" placeholder="0.00">
+            <span>km</span>
+        </div>
+
+        <label for="imageUpload">ภาพผลการเดิน-วิ่ง:</label>
+        <label class="upload-button" for="imageUpload">Upload ภาพ</label>
+        <input id="imageUpload" type="file" accept="image/*">
+        <div id="fileName" class="file-name">ยังไม่ได้เลือกภาพ</div>
+        <img id="imagePreview" class="image-preview" alt="Preview ภาพผลการเดิน-วิ่ง">
+
+        <button id="submitResult" class="submit-button" type="button">ส่งผล</button>
+        <div id="statusMessage" class="status-message"></div>
+    </main>
 
     <script>
-        const apiUrl = 'https://script.google.com/macros/s/AKfycbxLrzbk6_Zw2xWJrgU2jBWY8BLSsV0a_pFJP26e_EL1Sc6l3XBhEp2y7bfSyXSOr8UNrg/exec';
+        const apiUrl = 'https://script.google.com/macros/s/AKfycbxKYHJmyccYKISZL6NW3dbgnVc9svFwGAkARc0pnQ6lgRehTz7sIpAlgDerC4BiobvAbQ/exec';
         const teamSelect = document.getElementById('teamSelect');
         const playerSelect = document.getElementById('playerSelect');
+        const distanceInput = document.getElementById('distanceInput');
+        const imageUpload = document.getElementById('imageUpload');
+        const fileName = document.getElementById('fileName');
+        const imagePreview = document.getElementById('imagePreview');
+        const submitResult = document.getElementById('submitResult');
+        const statusMessage = document.getElementById('statusMessage');
+        let imagePreviewUrl = '';
 
         let data = [];
 
-        // Fetch data from API
         fetch(apiUrl)
             .then(response => {
                 console.log('Response status:', response.status);
@@ -135,6 +247,119 @@
                 playerSelect.disabled = false;
             } else {
                 playerSelect.disabled = true;
+            }
+        });
+
+        imageUpload.addEventListener('change', function() {
+            if (imagePreviewUrl) {
+                URL.revokeObjectURL(imagePreviewUrl);
+                imagePreviewUrl = '';
+            }
+
+            if (!this.files.length) {
+                fileName.textContent = 'ยังไม่ได้เลือกภาพ';
+                imagePreview.removeAttribute('src');
+                imagePreview.style.display = 'none';
+                return;
+            }
+
+            const imageFile = this.files[0];
+            fileName.textContent = imageFile.name;
+
+            if (imageFile.type.startsWith('image/')) {
+                imagePreviewUrl = URL.createObjectURL(imageFile);
+                imagePreview.src = imagePreviewUrl;
+                imagePreview.style.display = 'block';
+            } else {
+                imagePreview.removeAttribute('src');
+                imagePreview.style.display = 'none';
+            }
+        });
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        submitResult.addEventListener('click', async function() {
+            const selectedTeam = teamSelect.value;
+            const selectedPlayer = playerSelect.value;
+            const distance = Number(distanceInput.value);
+            const imageFile = imageUpload.files[0];
+
+            if (!selectedTeam) {
+                alert('กรุณาเลือกทีม');
+                return;
+            }
+            if (!selectedPlayer) {
+                alert('กรุณาเลือกผู้เล่น');
+                return;
+            }
+            if (!distance || distance <= 0) {
+                alert('กรุณากรอกระยะทางมากกว่า 0 km');
+                return;
+            }
+            if (!imageFile) {
+                alert('กรุณาอัปโหลดภาพ');
+                return;
+            }
+            if (!imageFile.type.startsWith('image/')) {
+                alert('กรุณาเลือกไฟล์รูปภาพเท่านั้น');
+                return;
+            }
+            if (imageFile.size > 5 * 1024 * 1024) {
+                alert('กรุณาเลือกภาพขนาดไม่เกิน 5 MB');
+                return;
+            }
+
+            submitResult.disabled = true;
+            submitResult.textContent = 'กำลังอัปโหลด...';
+            statusMessage.textContent = '';
+
+            try {
+                const imageData = await fileToBase64(imageFile);
+
+                fetch(apiUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        team_name: selectedTeam,
+                        player: selectedPlayer,
+                        distance: distance,
+                        image_name: imageFile.name,
+                        image_type: imageFile.type,
+                        image_data: imageData
+                    })
+                })
+                .then(() => {
+                    statusMessage.textContent = 'ส่งข้อมูลและรูปภาพเรียบร้อยแล้ว';
+                    distanceInput.value = '';
+                    imageUpload.value = '';
+                    fileName.textContent = 'ยังไม่ได้เลือกภาพ';
+                    if (imagePreviewUrl) {
+                        URL.revokeObjectURL(imagePreviewUrl);
+                        imagePreviewUrl = '';
+                    }
+                    imagePreview.removeAttribute('src');
+                    imagePreview.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error submitting result:', error);
+                    statusMessage.textContent = 'ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่';
+                })
+                .finally(() => {
+                    submitResult.disabled = false;
+                    submitResult.textContent = 'ส่งผล';
+                });
+            } catch (error) {
+                console.error('Error reading image:', error);
+                statusMessage.textContent = 'อ่านไฟล์ภาพไม่สำเร็จ กรุณาลองใหม่';
+                submitResult.disabled = false;
+                submitResult.textContent = 'ส่งผล';
             }
         });
     </script>

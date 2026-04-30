@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>อันดับทีม</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            max-width: 760px;
+            margin: 0 auto 20px;
+        }
+        .nav-link {
+            flex: 1;
+            padding: 12px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .nav-link.active {
+            background: white;
+            color: #333;
+        }
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 2em;
+        }
+        .status-message {
+            margin: 12px 0;
+            text-align: center;
+            min-height: 22px;
+        }
+        .rank-list {
+            display: grid;
+            gap: 10px;
+        }
+        .rank-row {
+            display: grid;
+            grid-template-columns: 56px 1fr 120px;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.16);
+        }
+        .rank-number {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            color: #333;
+            font-weight: bold;
+        }
+        .team-name {
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+        .distance {
+            text-align: right;
+            font-weight: bold;
+        }
+        .refresh-button {
+            display: block;
+            width: 100%;
+            margin-top: 18px;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: #22c55e;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .refresh-button:hover {
+            background: #16a34a;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .nav-menu {
+                flex-direction: column;
+            }
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .rank-row {
+                grid-template-columns: 48px 1fr;
+            }
+            .distance {
+                grid-column: 2;
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-menu">
+        <a class="nav-link" href="index.html">ส่งผล</a>
+        <a class="nav-link active" href="team_rank.html">อันดับทีม</a>
+    </nav>
+
+    <main class="container">
+        <h1>อันดับทีมสะสมระยะทาง</h1>
+        <div id="statusMessage" class="status-message">กำลังโหลดอันดับทีม...</div>
+        <div id="rankList" class="rank-list"></div>
+        <button id="refreshButton" class="refresh-button" type="button">โหลดใหม่</button>
+    </main>
+
+    <script>
+        const apiUrl = 'https://script.google.com/macros/s/AKfycbyLVYoa55lRiTeAAFsInE8OmwonTftQCquQF4eG6LiZvJ0IYVgIGR2MUqXj-p31vSndTQ/exec';
+        const rankList = document.getElementById('rankList');
+        const statusMessage = document.getElementById('statusMessage');
+        const refreshButton = document.getElementById('refreshButton');
+
+        function toNumber(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number : 0;
+        }
+
+        function normalizeRankData(rows) {
+            const totals = new Map();
+
+            rows.forEach(row => {
+                const teamName = row.team_name || row.team || row.Team || row['Team Name'];
+                const totalDistance = row.total_distance || row.totalDistance || row.distance_total || row.distance;
+
+                if (!teamName) {
+                    return;
+                }
+
+                totals.set(teamName, (totals.get(teamName) || 0) + toNumber(totalDistance));
+            });
+
+            return Array.from(totals, ([team_name, total_distance]) => ({
+                team_name,
+                total_distance
+            })).sort((a, b) => b.total_distance - a.total_distance);
+        }
+
+        function renderRankings(rankings) {
+            rankList.innerHTML = '';
+
+            if (!rankings.length) {
+                statusMessage.textContent = 'ยังไม่มีข้อมูลอันดับทีม';
+                return;
+            }
+
+            statusMessage.textContent = '';
+
+            rankings.forEach((team, index) => {
+                const row = document.createElement('div');
+                row.className = 'rank-row';
+
+                const rankNumber = document.createElement('div');
+                rankNumber.className = 'rank-number';
+                rankNumber.textContent = index + 1;
+
+                const teamName = document.createElement('div');
+                teamName.className = 'team-name';
+                teamName.textContent = team.team_name;
+
+                const distance = document.createElement('div');
+                distance.className = 'distance';
+                distance.textContent = toNumber(team.total_distance).toFixed(2) + ' km';
+
+                row.appendChild(rankNumber);
+                row.appendChild(teamName);
+                row.appendChild(distance);
+                rankList.appendChild(row);
+            });
+        }
+
+        function loadRankings() {
+            statusMessage.textContent = 'กำลังโหลดอันดับทีม...';
+            rankList.innerHTML = '';
+            refreshButton.disabled = true;
+
+            fetch(apiUrl + '?action=team_rank')
+                .then(response => response.json())
+                .then(jsonData => {
+                    const rows = Array.isArray(jsonData) ? jsonData : jsonData.data || jsonData.rankings || [];
+                    renderRankings(normalizeRankData(rows));
+                })
+                .catch(error => {
+                    console.error('Error loading team rankings:', error);
+                    statusMessage.textContent = 'โหลดอันดับทีมไม่สำเร็จ กรุณาลองใหม่';
+                })
+                .finally(() => {
+                    refreshButton.disabled = false;
+                });
+        }
+
+        refreshButton.addEventListener('click', loadRankings);
+        loadRankings();
+    </script>
+</body>
+</html>
