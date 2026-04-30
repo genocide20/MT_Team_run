@@ -22,9 +22,23 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             text-align: center;
             margin-bottom: 30px;
             font-size: 2em;
+        }
+        .icon {
+            width: 1.15em;
+            height: 1.15em;
+            flex: 0 0 auto;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
         }
         .nav-menu {
             display: flex;
@@ -50,6 +64,10 @@
             gap: 8px;
         }
         .nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             padding: 10px 14px;
             border-radius: 6px;
             background: rgba(255, 255, 255, 0.18);
@@ -148,6 +166,33 @@
             text-align: center;
             min-height: 20px;
         }
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            font-weight: bold;
+        }
+        .loading-state[hidden] {
+            display: none;
+        }
+        .loading-spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255, 255, 255, 0.35);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -171,18 +216,32 @@
 </head>
 <body>
     <nav class="nav-menu" aria-label="Main navigation">
-        <a class="nav-brand" href="index.html">MT Team Run</a>
+        <a class="nav-brand" href="index.html">MT Team Walk-Run</a>
         <div class="nav-links">
-            <a class="nav-link active" href="index.html">ส่งผล</a>
-            <a class="nav-link" href="team_rank.html">อันดับทีม</a>
+            <a class="nav-link active" href="index.html">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16v4H4v-4"></path></svg>
+                <span>ส่งผล</span>
+            </a>
+            <a class="nav-link" href="team_rank.html">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"></path><path d="M5 5H3v2a4 4 0 0 0 4 4"></path><path d="M19 5h2v2a4 4 0 0 1-4 4"></path></svg>
+                <span>อันดับทีม</span>
+            </a>
         </div>
     </nav>
 
     <main class="container">
-        <h1>ส่งผลเดิน-วิ่ง</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16v4H4v-4"></path></svg>
+            <span>ส่งผลเดิน-วิ่ง</span>
+        </h1>
+
+        <div id="loadingState" class="loading-state" role="status" aria-live="polite">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <span id="loadingText">กำลังโหลดรายชื่อทีม...</span>
+        </div>
 
         <label for="teamSelect">เลือกทีม:</label>
-        <select id="teamSelect">
+        <select id="teamSelect" disabled>
             <option value="">Select a team</option>
         </select>
 
@@ -203,7 +262,7 @@
         <div id="fileName" class="file-name">ยังไม่ได้เลือกภาพ</div>
         <img id="imagePreview" class="image-preview" alt="Preview ภาพผลการเดิน-วิ่ง">
 
-        <button id="submitResult" class="submit-button" type="button">ส่งผล</button>
+        <button id="submitResult" class="submit-button" type="button" disabled>ส่งผล</button>
         <div id="statusMessage" class="status-message"></div>
     </main>
 
@@ -217,37 +276,68 @@
         const imagePreview = document.getElementById('imagePreview');
         const submitResult = document.getElementById('submitResult');
         const statusMessage = document.getElementById('statusMessage');
+        const loadingState = document.getElementById('loadingState');
+        const loadingText = document.getElementById('loadingText');
         let imagePreviewUrl = '';
 
         let data = [];
 
-        fetch(apiUrl)
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.json();
-            })
-            .then(jsonData => {
-                console.log('Fetched data:', jsonData);
-                data = jsonData;
-                populateTeams();
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                alert('Error fetching data: ' + error.message);
-            });
+        setTeamDataLoading(true);
+        loadTeamData();
+
+        function setTeamDataLoading(isLoading, message) {
+            loadingState.hidden = !isLoading;
+            loadingText.textContent = message || 'กำลังโหลดรายชื่อทีม...';
+            teamSelect.disabled = isLoading;
+            playerSelect.disabled = true;
+            distanceInput.disabled = isLoading;
+            imageUpload.disabled = isLoading;
+            submitResult.disabled = isLoading;
+        }
+
+        function loadTeamData() {
+            teamSelect.innerHTML = '<option value="">กำลังโหลดทีม...</option>';
+            playerSelect.innerHTML = '<option value="">Select a player</option>';
+
+            fetch(apiUrl)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(jsonData => {
+                    console.log('Fetched data:', jsonData);
+                    data = jsonData;
+                    if (populateTeams()) {
+                        setTeamDataLoading(false);
+                    } else {
+                        loadingState.hidden = true;
+                        teamSelect.disabled = true;
+                        distanceInput.disabled = true;
+                        imageUpload.disabled = true;
+                        submitResult.disabled = true;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    loadingState.hidden = true;
+                    teamSelect.innerHTML = '<option value="">โหลดทีมไม่สำเร็จ</option>';
+                    statusMessage.textContent = 'โหลดรายชื่อทีมไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ';
+                });
+        }
 
         function populateTeams() {
             console.log('Data length:', data.length);
             if (!Array.isArray(data)) {
                 console.error('Data is not an array:', data);
-                alert('API did not return an array. Response: ' + JSON.stringify(data));
-                return;
+                statusMessage.textContent = 'API did not return an array. Response: ' + JSON.stringify(data);
+                return false;
             }
             const teams = [...new Set(data.map(item => item.team_name))];
             console.log('Teams:', teams);
+            teamSelect.innerHTML = '<option value="">Select a team</option>';
             if (teams.length === 0) {
-                alert('No teams found in data');
-                return;
+                statusMessage.textContent = 'No teams found in data';
+                return false;
             }
             teams.forEach(team => {
                 const option = document.createElement('option');
@@ -255,6 +345,7 @@
                 option.textContent = team;
                 teamSelect.appendChild(option);
             });
+            return true;
         }
 
         teamSelect.addEventListener('change', function() {

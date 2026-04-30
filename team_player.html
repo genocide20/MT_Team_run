@@ -37,6 +37,10 @@
             gap: 8px;
         }
         .nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             padding: 10px 14px;
             border-radius: 6px;
             background: rgba(255, 255, 255, 0.18);
@@ -58,9 +62,23 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         h1 {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
             text-align: center;
             margin: 0 0 10px;
             font-size: 2em;
+        }
+        .icon {
+            width: 1.15em;
+            height: 1.15em;
+            flex: 0 0 auto;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
         }
         .team-title {
             margin-bottom: 22px;
@@ -74,6 +92,33 @@
             margin: 12px 0;
             text-align: center;
             min-height: 22px;
+        }
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 12px 0 20px;
+            padding: 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.16);
+            font-weight: bold;
+        }
+        .loading-state[hidden] {
+            display: none;
+        }
+        .loading-spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255, 255, 255, 0.35);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
         .player-list {
             display: grid;
@@ -120,7 +165,10 @@
             margin-top: 18px;
         }
         .button {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             box-sizing: border-box;
             width: 100%;
             padding: 12px;
@@ -184,19 +232,38 @@
     <nav class="nav-menu" aria-label="Main navigation">
         <a class="nav-brand" href="index.html">MT Team Run</a>
         <div class="nav-links">
-            <a class="nav-link" href="index.html">ส่งผล</a>
-            <a class="nav-link active" href="team_rank.html">อันดับทีม</a>
+            <a class="nav-link" href="index.html">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16v4H4v-4"></path></svg>
+                <span>ส่งผล</span>
+            </a>
+            <a class="nav-link active" href="team_rank.html">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"></path><path d="M5 5H3v2a4 4 0 0 0 4 4"></path><path d="M19 5h2v2a4 4 0 0 1-4 4"></path></svg>
+                <span>อันดับทีม</span>
+            </a>
         </div>
     </nav>
 
     <main class="container">
-        <h1>รายชื่อผู้เล่น</h1>
+        <h1>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.9"></path><path d="M16 3.1a4 4 0 0 1 0 7.8"></path></svg>
+            <span>รายชื่อผู้เล่น</span>
+        </h1>
         <div id="teamTitle" class="team-title"></div>
-        <div id="statusMessage" class="status-message">กำลังโหลดข้อมูลผู้เล่น...</div>
+        <div id="loadingState" class="loading-state" role="status" aria-live="polite">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <span id="loadingText">กำลังโหลดข้อมูลผู้เล่น...</span>
+        </div>
+        <div id="statusMessage" class="status-message"></div>
         <div id="playerList" class="player-list"></div>
         <div class="action-row">
-            <a class="button back-button" href="team_rank.html">กลับหน้าอันดับทีม</a>
-            <button id="refreshButton" class="button refresh-button" type="button">โหลดใหม่</button>
+            <a class="button back-button" href="team_rank.html">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
+                <span>กลับหน้าอันดับทีม</span>
+            </a>
+            <button id="refreshButton" class="button refresh-button" type="button">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2"></path><path d="M3 12a9 9 0 0 1 15.5-6.2"></path><path d="M18 2v4h-4"></path><path d="M6 22v-4h4"></path></svg>
+                <span>โหลดใหม่</span>
+            </button>
         </div>
     </main>
 
@@ -206,6 +273,8 @@
         const playerList = document.getElementById('playerList');
         const statusMessage = document.getElementById('statusMessage');
         const refreshButton = document.getElementById('refreshButton');
+        const loadingState = document.getElementById('loadingState');
+        const loadingText = document.getElementById('loadingText');
         const selectedTeam = new URLSearchParams(window.location.search).get('team') || '';
 
         function toNumber(value) {
@@ -258,8 +327,15 @@
             });
         }
 
+        function setPageLoading(isLoading, message) {
+            loadingState.hidden = !isLoading;
+            loadingText.textContent = message || 'กำลังโหลดข้อมูลผู้เล่น...';
+            refreshButton.disabled = isLoading;
+        }
+
         function loadPlayers() {
             if (!selectedTeam) {
+                loadingState.hidden = true;
                 teamTitle.textContent = 'ไม่พบชื่อทีม';
                 statusMessage.textContent = 'กรุณากลับไปเลือกทีมจากหน้าอันดับทีม';
                 refreshButton.disabled = true;
@@ -267,9 +343,9 @@
             }
 
             teamTitle.textContent = selectedTeam;
-            statusMessage.textContent = 'กำลังโหลดข้อมูลผู้เล่น...';
+            setPageLoading(true);
+            statusMessage.textContent = '';
             playerList.innerHTML = '';
-            refreshButton.disabled = true;
 
             fetch(apiUrl + '?action=team_player&team=' + encodeURIComponent(selectedTeam))
                 .then(response => response.json())
@@ -282,7 +358,7 @@
                     statusMessage.textContent = 'โหลดข้อมูลผู้เล่นไม่สำเร็จ กรุณาลองใหม่';
                 })
                 .finally(() => {
-                    refreshButton.disabled = false;
+                    setPageLoading(false);
                 });
         }
 
