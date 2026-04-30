@@ -133,6 +133,28 @@
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.16);
         }
+        .player-row.team-carrier {
+            position: relative;
+            grid-template-columns: 64px 1fr 130px;
+            padding: 18px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.95), rgba(255, 255, 255, 0.22));
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+            color: #052637;
+        }
+        .player-row.team-carrier::after {
+            content: "TEAM CARRIER";
+            position: absolute;
+            top: -11px;
+            right: 14px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #ecfeff;
+            color: #075985;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.06em;
+        }
         .rank-number {
             display: grid;
             place-items: center;
@@ -143,6 +165,13 @@
             color: #333;
             font-weight: bold;
         }
+        .player-row.team-carrier .rank-number {
+            width: 48px;
+            height: 48px;
+            background: #052637;
+            color: #7dd3fc;
+            box-shadow: inset 0 0 0 2px rgba(125, 211, 252, 0.45);
+        }
         .player-name {
             font-weight: bold;
             overflow-wrap: anywhere;
@@ -150,6 +179,15 @@
         .player-name a {
             color: white;
             text-decoration: none;
+        }
+        .player-row.team-carrier .player-name {
+            font-size: 20px;
+        }
+        .player-row.team-carrier .player-name a {
+            color: #052637;
+        }
+        .player-row.team-carrier .distance {
+            font-size: 19px;
         }
         .player-name a:hover {
             text-decoration: underline;
@@ -220,6 +258,14 @@
             }
             .player-row {
                 grid-template-columns: 48px 1fr;
+            }
+            .player-row.team-carrier {
+                grid-template-columns: 56px 1fr;
+                padding-top: 20px;
+            }
+            .player-row.team-carrier .rank-number {
+                width: 44px;
+                height: 44px;
             }
             .distance {
                 grid-column: 2;
@@ -303,10 +349,18 @@
             players.forEach((player, index) => {
                 const row = document.createElement('div');
                 row.className = 'player-row';
+                if (index === 0) {
+                    row.classList.add('team-carrier');
+                }
 
                 const rankNumber = document.createElement('div');
                 rankNumber.className = 'rank-number';
-                rankNumber.textContent = index + 1;
+                if (index === 0) {
+                    rankNumber.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 14.7 8.5 21 9.4l-4.5 4.4 1 6.2L12 17l-5.5 3 1-6.2L3 9.4l6.3-.9L12 3Z"></path></svg>';
+                    rankNumber.setAttribute('aria-label', 'อันดับ 1');
+                } else {
+                    rankNumber.textContent = index + 1;
+                }
 
                 const playerName = document.createElement('div');
                 playerName.className = 'player-name';
