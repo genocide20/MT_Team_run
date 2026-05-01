@@ -124,6 +124,16 @@
             border-radius: 999px;
             background: linear-gradient(90deg, #fb7185, #facc15, #2dd4bf);
         }
+        .team-image {
+            display: block;
+            width: min(100%, 360px);
+            aspect-ratio: 16 / 9;
+            margin: 0 auto 24px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: rgba(255, 255, 255, 0.16);
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.26);
+        }
         .status-message {
             margin: 12px 0;
             text-align: center;
@@ -308,6 +318,9 @@
                 width: auto;
                 font-size: 24px;
             }
+            .team-image {
+                margin-bottom: 18px;
+            }
             .player-row {
                 grid-template-columns: 48px 1fr;
             }
@@ -347,6 +360,7 @@
             <span>รายชื่อผู้เล่น</span>
         </h1>
         <div id="teamTitle" class="team-title"></div>
+        <img id="teamImage" class="team-image" alt="" hidden>
         <div id="loadingState" class="loading-state" role="status" aria-live="polite">
             <div class="loading-spinner" aria-hidden="true"></div>
             <span id="loadingText">กำลังโหลดข้อมูลผู้เล่น...</span>
@@ -368,16 +382,24 @@
     <script>
         const apiUrl = 'https://script.google.com/macros/s/AKfycbyLVYoa55lRiTeAAFsInE8OmwonTftQCquQF4eG6LiZvJ0IYVgIGR2MUqXj-p31vSndTQ/exec';
         const teamTitle = document.getElementById('teamTitle');
+        const teamImage = document.getElementById('teamImage');
         const playerList = document.getElementById('playerList');
         const statusMessage = document.getElementById('statusMessage');
         const refreshButton = document.getElementById('refreshButton');
         const loadingState = document.getElementById('loadingState');
         const loadingText = document.getElementById('loadingText');
         const selectedTeam = new URLSearchParams(window.location.search).get('team') || '';
+        const specialTeamName = 'ละมุน pace แต่ race เกินร้อย';
+        const defaultTeamImage = 'images/images_run.jpg';
+        const specialTeamImage = 'images/S__29016248.jpg';
 
         function toNumber(value) {
             const number = Number(value);
             return Number.isFinite(number) ? number : 0;
+        }
+
+        function getTeamImage(teamName) {
+            return String(teamName || '').trim() === specialTeamName ? specialTeamImage : defaultTeamImage;
         }
 
         function normalizePlayerData(rows) {
@@ -452,12 +474,16 @@
             if (!selectedTeam) {
                 loadingState.hidden = true;
                 teamTitle.textContent = 'ไม่พบชื่อทีม';
+                teamImage.hidden = true;
                 statusMessage.textContent = 'กรุณากลับไปเลือกทีมจากหน้าอันดับทีม';
                 refreshButton.disabled = true;
                 return;
             }
 
             teamTitle.textContent = selectedTeam;
+            teamImage.src = getTeamImage(selectedTeam);
+            teamImage.alt = 'รูปทีม ' + selectedTeam;
+            teamImage.hidden = false;
             setPageLoading(true);
             statusMessage.textContent = '';
             playerList.innerHTML = '';
