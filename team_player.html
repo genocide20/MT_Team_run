@@ -99,12 +99,30 @@
             color: #ca8a04;
         }
         .team-title {
-            margin-bottom: 22px;
+            position: relative;
+            display: block;
+            width: fit-content;
+            max-width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto 30px;
+            color: #fff1f2;
             text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            opacity: 0.95;
+            font-size: 30px;
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: 0.02em;
+            text-shadow: 2px 2px 0 #0f766e, 4px 4px 0 rgba(250, 204, 21, 0.85);
             overflow-wrap: anywhere;
+        }
+        .team-title::after {
+            content: "";
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            bottom: -9px;
+            height: 5px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #fb7185, #facc15, #2dd4bf);
         }
         .status-message {
             margin: 12px 0;
@@ -188,30 +206,42 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: white;
-            color: #333;
-            font-weight: bold;
+            background: linear-gradient(145deg, #ffffff, #dbeafe);
+            color: #075985;
+            font-weight: 800;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 5px 12px rgba(14, 165, 233, 0.24);
         }
         .player-row.team-carrier .rank-number {
             width: 48px;
             height: 48px;
             background: #052637;
             color: #7dd3fc;
-            box-shadow: inset 0 0 0 2px rgba(125, 211, 252, 0.45);
+            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.32);
+            box-shadow: inset 0 0 0 2px rgba(125, 211, 252, 0.45), 0 8px 18px rgba(7, 89, 133, 0.28);
         }
         .player-name {
-            font-weight: bold;
+            color: #f8fafc;
+            font-weight: 800;
+            letter-spacing: 0.01em;
+            text-shadow: 0 2px 4px rgba(15, 23, 42, 0.32), 0 0 12px rgba(56, 189, 248, 0.28);
             overflow-wrap: anywhere;
         }
         .player-row.team-carrier .player-name {
             font-size: 20px;
+            color: #052637;
+            text-shadow: 0 1px 0 rgba(236, 254, 255, 0.75);
         }
         .player-row.team-carrier .distance {
             font-size: 19px;
+            color: #064e3b;
+            text-shadow: 0 1px 0 rgba(236, 254, 255, 0.75);
         }
         .distance {
             text-align: right;
-            font-weight: bold;
+            color: #bbf7d0;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(15, 23, 42, 0.32), 0 0 10px rgba(34, 197, 94, 0.3);
         }
         .action-row {
             display: grid;
@@ -272,6 +302,11 @@
             }
             h1 {
                 font-size: 1.5em;
+            }
+            .team-title {
+                display: block;
+                width: auto;
+                font-size: 24px;
             }
             .player-row {
                 grid-template-columns: 48px 1fr;
