@@ -80,6 +80,24 @@
             stroke-linejoin: round;
             fill: none;
         }
+        .icon-submit {
+            color: #34d399;
+        }
+        .icon-rank {
+            color: #facc15;
+        }
+        .icon-team {
+            color: #38bdf8;
+        }
+        .icon-back {
+            color: #bfdbfe;
+        }
+        .icon-refresh {
+            color: #bbf7d0;
+        }
+        .nav-link.active .icon-rank {
+            color: #ca8a04;
+        }
         .team-title {
             margin-bottom: 22px;
             text-align: center;
@@ -132,6 +150,15 @@
             padding: 14px;
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.16);
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+        }
+        .player-row:hover,
+        .player-row:focus-visible {
+            background: rgba(255, 255, 255, 0.24);
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+            transform: translateY(-1px);
+            outline: none;
         }
         .player-row.team-carrier {
             position: relative;
@@ -176,21 +203,11 @@
             font-weight: bold;
             overflow-wrap: anywhere;
         }
-        .player-name a {
-            color: white;
-            text-decoration: none;
-        }
         .player-row.team-carrier .player-name {
             font-size: 20px;
         }
-        .player-row.team-carrier .player-name a {
-            color: #052637;
-        }
         .player-row.team-carrier .distance {
             font-size: 19px;
-        }
-        .player-name a:hover {
-            text-decoration: underline;
         }
         .distance {
             text-align: right;
@@ -276,14 +293,14 @@
 </head>
 <body>
     <nav class="nav-menu" aria-label="Main navigation">
-        <a class="nav-brand" href="index.html">MT Team Run</a>
+        <a class="nav-brand" href="index.html">MT Team Walk-Run</a>
         <div class="nav-links">
             <a class="nav-link" href="index.html">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16v4H4v-4"></path></svg>
+                <svg class="icon icon-submit" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16v4H4v-4"></path></svg>
                 <span>ส่งผล</span>
             </a>
             <a class="nav-link active" href="team_rank.html">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"></path><path d="M5 5H3v2a4 4 0 0 0 4 4"></path><path d="M19 5h2v2a4 4 0 0 1-4 4"></path></svg>
+                <svg class="icon icon-rank" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"></path><path d="M5 5H3v2a4 4 0 0 0 4 4"></path><path d="M19 5h2v2a4 4 0 0 1-4 4"></path></svg>
                 <span>อันดับทีม</span>
             </a>
         </div>
@@ -291,7 +308,7 @@
 
     <main class="container">
         <h1>
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.9"></path><path d="M16 3.1a4 4 0 0 1 0 7.8"></path></svg>
+            <svg class="icon icon-team" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.9"></path><path d="M16 3.1a4 4 0 0 1 0 7.8"></path></svg>
             <span>รายชื่อผู้เล่น</span>
         </h1>
         <div id="teamTitle" class="team-title"></div>
@@ -303,11 +320,11 @@
         <div id="playerList" class="player-list"></div>
         <div class="action-row">
             <a class="button back-button" href="team_rank.html">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
+                <svg class="icon icon-back" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
                 <span>กลับหน้าอันดับทีม</span>
             </a>
             <button id="refreshButton" class="button refresh-button" type="button">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2"></path><path d="M3 12a9 9 0 0 1 15.5-6.2"></path><path d="M18 2v4h-4"></path><path d="M6 22v-4h4"></path></svg>
+                <svg class="icon icon-refresh" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2"></path><path d="M3 12a9 9 0 0 1 15.5-6.2"></path><path d="M18 2v4h-4"></path><path d="M6 22v-4h4"></path></svg>
                 <span>โหลดใหม่</span>
             </button>
         </div>
@@ -349,6 +366,19 @@
             players.forEach((player, index) => {
                 const row = document.createElement('div');
                 row.className = 'player-row';
+                const playerUrl = 'player_detail.html?team=' + encodeURIComponent(selectedTeam) + '&player=' + encodeURIComponent(player.player);
+                row.setAttribute('role', 'link');
+                row.setAttribute('tabindex', '0');
+                row.setAttribute('aria-label', 'ดูรายละเอียดผู้เล่น ' + player.player);
+                row.addEventListener('click', () => {
+                    window.location.href = playerUrl;
+                });
+                row.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        window.location.href = playerUrl;
+                    }
+                });
                 if (index === 0) {
                     row.classList.add('team-carrier');
                 }
@@ -356,7 +386,7 @@
                 const rankNumber = document.createElement('div');
                 rankNumber.className = 'rank-number';
                 if (index === 0) {
-                    rankNumber.innerHTML = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 14.7 8.5 21 9.4l-4.5 4.4 1 6.2L12 17l-5.5 3 1-6.2L3 9.4l6.3-.9L12 3Z"></path></svg>';
+                    rankNumber.innerHTML = '<svg class="icon icon-team" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 14.7 8.5 21 9.4l-4.5 4.4 1 6.2L12 17l-5.5 3 1-6.2L3 9.4l6.3-.9L12 3Z"></path></svg>';
                     rankNumber.setAttribute('aria-label', 'อันดับ 1');
                 } else {
                     rankNumber.textContent = index + 1;
@@ -364,11 +394,7 @@
 
                 const playerName = document.createElement('div');
                 playerName.className = 'player-name';
-
-                const playerLink = document.createElement('a');
-                playerLink.href = 'player_detail.html?team=' + encodeURIComponent(selectedTeam) + '&player=' + encodeURIComponent(player.player);
-                playerLink.textContent = player.player;
-                playerName.appendChild(playerLink);
+                playerName.textContent = player.player;
 
                 const distance = document.createElement('div');
                 distance.className = 'distance';
