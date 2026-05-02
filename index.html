@@ -178,6 +178,11 @@
             text-align: center;
             min-height: 20px;
         }
+        .ocr-status {
+            margin-top: 8px;
+            font-size: 14px;
+            opacity: 0.95;
+        }
         .upload-warning {
             display: none;
             margin-top: 14px;
@@ -277,17 +282,18 @@
             <option value="">Select a player</option>
         </select>
 
-        <label for="distanceInput">ระยะทาง:</label>
-        <div class="unit-input">
-            <input id="distanceInput" type="number" min="0" step="0.01" placeholder="0.00">
-            <span>km</span>
-        </div>
-
         <label for="imageUpload">ภาพผลการเดิน-วิ่ง:</label>
         <label class="upload-button" for="imageUpload">Upload ภาพ</label>
         <input id="imageUpload" type="file" accept="image/*">
         <div id="fileName" class="file-name">ยังไม่ได้เลือกภาพ</div>
         <img id="imagePreview" class="image-preview" alt="Preview ภาพผลการเดิน-วิ่ง">
+        <div id="ocrStatus" class="ocr-status" aria-live="polite"></div>
+
+        <label for="distanceInput">ระยะทาง: (อ่านค่าอาจผิดพลาด โปรดตรวจสอบ)</label>
+        <div class="unit-input">
+            <input id="distanceInput" type="number" min="0" step="0.01" placeholder="0.00">
+            <span>km</span>
+        </div>
 
         <button id="submitResult" class="submit-button" type="button" disabled>ส่งผล</button>
         <div id="uploadWarning" class="upload-warning" role="alert">
@@ -296,6 +302,7 @@
         <div id="statusMessage" class="status-message"></div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script>
         const apiUrl = 'https://script.google.com/macros/s/AKfycbxKYHJmyccYKISZL6NW3dbgnVc9svFwGAkARc0pnQ6lgRehTz7sIpAlgDerC4BiobvAbQ/exec';
         const teamSelect = document.getElementById('teamSelect');
@@ -304,6 +311,7 @@
         const imageUpload = document.getElementById('imageUpload');
         const fileName = document.getElementById('fileName');
         const imagePreview = document.getElementById('imagePreview');
+        const ocrStatus = document.getElementById('ocrStatus');
         const submitResult = document.getElementById('submitResult');
         const statusMessage = document.getElementById('statusMessage');
         const uploadWarning = document.getElementById('uploadWarning');
@@ -311,10 +319,25 @@
         const loadingText = document.getElementById('loadingText');
         let imagePreviewUrl = '';
         let isSubmitting = false;
+        let ocrRequestId = 0;
 
-        let data = [];
+        const data = [
+            { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'จารุณี ประเสริฐโสภณ' },
+            { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'วิภาภรณ์ ทรายทอง' },
+            { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'กันต์ แหนสระแก้ว' },
+            { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'พนิดา มงคลสุจริตกุล' },
+            { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'กนกวรรณ กิตตินิยม' },
+            { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'ชลธิดา ยาระณะ' },
+            { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'ธารารัตน์ ขาวเขียว' },
+            { team_name: 'พ่อบ้านใจกล้า', player: 'ส้มโอ' },
+            { team_name: 'พ่อบ้านใจกล้า', player: 'แตงโม' },
+            { team_name: 'พ่อบ้านใจกล้า', player: 'มะละกอ' },
+            { team_name: 'พ่อบ้านใจกล้า', player: 'มังคุด' },
+            { team_name: 'พ่อบ้านใจกล้า', player: 'ทุเรียน' },
+            { team_name: 'พ่อบ้านใจกล้า', player: 'เงาะ' },
+            { team_name: 'พ่อบ้านใจกล้า', player: 'กล้วย' }
+        ];
 
-        setTeamDataLoading(true);
         loadTeamData();
 
         function setTeamDataLoading(isLoading, message) {
@@ -328,40 +351,23 @@
         }
 
         function loadTeamData() {
-            teamSelect.innerHTML = '<option value="">กำลังโหลดทีม...</option>';
             playerSelect.innerHTML = '<option value="">Select a player</option>';
-
-            fetch(apiUrl)
-                .then(response => {
-                    console.log('Response status:', response.status);
-                    return response.json();
-                })
-                .then(jsonData => {
-                    console.log('Fetched data:', jsonData);
-                    data = jsonData;
-                    if (populateTeams()) {
-                        setTeamDataLoading(false);
-                    } else {
-                        loadingState.hidden = true;
-                        teamSelect.disabled = true;
-                        distanceInput.disabled = true;
-                        imageUpload.disabled = true;
-                        submitResult.disabled = true;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    loadingState.hidden = true;
-                    teamSelect.innerHTML = '<option value="">โหลดทีมไม่สำเร็จ</option>';
-                    statusMessage.textContent = 'โหลดรายชื่อทีมไม่สำเร็จ กรุณารีเฟรชหน้าเว็บ';
-                });
+            if (populateTeams()) {
+                setTeamDataLoading(false);
+            } else {
+                loadingState.hidden = true;
+                teamSelect.disabled = true;
+                distanceInput.disabled = true;
+                imageUpload.disabled = true;
+                submitResult.disabled = true;
+            }
         }
 
         function populateTeams() {
             console.log('Data length:', data.length);
             if (!Array.isArray(data)) {
                 console.error('Data is not an array:', data);
-                statusMessage.textContent = 'API did not return an array. Response: ' + JSON.stringify(data);
+                statusMessage.textContent = 'Team data is invalid. Response: ' + JSON.stringify(data);
                 return false;
             }
             const teams = [...new Set(data.map(item => item.team_name))];
@@ -397,7 +403,9 @@
             }
         });
 
-        imageUpload.addEventListener('change', function() {
+        imageUpload.addEventListener('change', async function() {
+            const currentOcrRequestId = ++ocrRequestId;
+
             if (imagePreviewUrl) {
                 URL.revokeObjectURL(imagePreviewUrl);
                 imagePreviewUrl = '';
@@ -407,6 +415,7 @@
                 fileName.textContent = 'ยังไม่ได้เลือกภาพ';
                 imagePreview.removeAttribute('src');
                 imagePreview.style.display = 'none';
+                ocrStatus.textContent = '';
                 return;
             }
 
@@ -417,11 +426,216 @@
                 imagePreviewUrl = URL.createObjectURL(imageFile);
                 imagePreview.src = imagePreviewUrl;
                 imagePreview.style.display = 'block';
+                await fillDistanceFromImage(imageFile, currentOcrRequestId);
             } else {
                 imagePreview.removeAttribute('src');
                 imagePreview.style.display = 'none';
+                ocrStatus.textContent = 'ไฟล์นี้ไม่ใช่รูปภาพ ระบบจึงอ่านระยะทางไม่ได้';
             }
         });
+
+        async function fillDistanceFromImage(imageFile, requestId) {
+            if (!window.Tesseract) {
+                ocrStatus.textContent = 'โหลดระบบ OCR ไม่สำเร็จ กรุณากรอกระยะทางเอง';
+                return;
+            }
+
+            ocrStatus.textContent = 'กำลังอ่านระยะทางจากรูปภาพ...';
+
+            try {
+                const imageForOcr = await prepareImageForOcr(imageFile);
+                const result = await recognizeDistanceImage(imageForOcr);
+                if (requestId !== ocrRequestId) {
+                    return;
+                }
+
+                let distance = extractDistanceFromOcrResult(result);
+                if (!distance) {
+                    const imageForOcrCrop = await prepareImageForOcr(imageFile, {
+                        x: 0.45,
+                        y: 0.38,
+                        width: 0.55,
+                        height: 0.36
+                    });
+                    const cropResult = await recognizeDistanceImage(imageForOcrCrop);
+                    if (requestId !== ocrRequestId) {
+                        return;
+                    }
+                    distance = extractDistanceFromOcrResult(cropResult);
+                }
+
+                if (distance) {
+                    distanceInput.value = distance.toFixed(2);
+                    ocrStatus.textContent = `อ่านระยะทางจากรูปได้ประมาณ ${distance.toFixed(2)} km`;
+                } else {
+                    ocrStatus.textContent = 'อ่านระยะทางจากรูปไม่ได้ กรุณากรอกระยะทางเอง';
+                }
+            } catch (error) {
+                console.error('OCR error:', error);
+                if (requestId === ocrRequestId) {
+                    ocrStatus.textContent = 'อ่านรูปภาพไม่สำเร็จ กรุณากรอกระยะทางเอง';
+                }
+            }
+        }
+
+        function recognizeDistanceImage(imageForOcr) {
+            return Tesseract.recognize(imageForOcr, 'eng', {
+                tessedit_char_whitelist: '0123456789.,: kmKM/',
+                preserve_interword_spaces: '1'
+            });
+        }
+
+        function prepareImageForOcr(imageFile, crop) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                const imageUrl = URL.createObjectURL(imageFile);
+
+                image.onload = () => {
+                    const sourceX = crop ? Math.round(image.width * crop.x) : 0;
+                    const sourceY = crop ? Math.round(image.height * crop.y) : 0;
+                    const sourceWidth = crop ? Math.round(image.width * crop.width) : image.width;
+                    const sourceHeight = crop ? Math.round(image.height * crop.height) : image.height;
+                    const scale = Math.min(Math.max(1200 / sourceWidth, 1), 2.5);
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d', { willReadFrequently: true });
+                    canvas.width = Math.round(sourceWidth * scale);
+                    canvas.height = Math.round(sourceHeight * scale);
+
+                    context.drawImage(
+                        image,
+                        sourceX,
+                        sourceY,
+                        sourceWidth,
+                        sourceHeight,
+                        0,
+                        0,
+                        canvas.width,
+                        canvas.height
+                    );
+
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const pixels = imageData.data;
+                    let totalBrightness = 0;
+
+                    for (let i = 0; i < pixels.length; i += 4) {
+                        const gray = pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114;
+                        totalBrightness += gray;
+                    }
+
+                    const averageBrightness = totalBrightness / (pixels.length / 4);
+                    const shouldInvert = averageBrightness < 120;
+
+                    for (let i = 0; i < pixels.length; i += 4) {
+                        const gray = pixels[i] * 0.299 + pixels[i + 1] * 0.587 + pixels[i + 2] * 0.114;
+                        let contrast = Math.max(0, Math.min(255, (gray - 128) * 1.8 + 128));
+                        if (shouldInvert) {
+                            contrast = 255 - contrast;
+                        }
+                        pixels[i] = contrast;
+                        pixels[i + 1] = contrast;
+                        pixels[i + 2] = contrast;
+                    }
+
+                    context.putImageData(imageData, 0, 0);
+                    URL.revokeObjectURL(imageUrl);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+
+                image.onerror = () => {
+                    URL.revokeObjectURL(imageUrl);
+                    reject(new Error('Cannot load image for OCR'));
+                };
+
+                image.src = imageUrl;
+            });
+        }
+
+        function extractDistanceFromOcrResult(result) {
+            const text = result.data.text || '';
+            const distanceFromText = extractDistanceFromText(text);
+            if (distanceFromText) {
+                return distanceFromText;
+            }
+
+            const words = Array.isArray(result.data.words) ? result.data.words : [];
+            const candidates = words
+                .map(word => {
+                    const rawText = word.text || '';
+                    const normalizedWord = normalizeOcrText(rawText);
+                    const match = normalizedWord.match(/\b(\d{1,3}\.\d{1,2})\b/);
+                    if (!match) {
+                        return null;
+                    }
+
+                    const distance = Number(match[1]);
+                    if (!isReasonableDistance(distance)) {
+                        return null;
+                    }
+
+                    const box = word.bbox || {};
+                    const width = Math.max(0, (box.x1 || 0) - (box.x0 || 0));
+                    const height = Math.max(0, (box.y1 || 0) - (box.y0 || 0));
+                    const area = width * height;
+
+                    return {
+                        distance,
+                        score: area + Math.max(0, word.confidence || 0)
+                    };
+                })
+                .filter(Boolean)
+                .sort((a, b) => b.score - a.score);
+
+            return candidates.length ? candidates[0].distance : null;
+        }
+
+        function normalizeOcrText(text) {
+            return text
+                .replace(/,/g, '.')
+                .replace(/[Oo]/g, '0')
+                .replace(/[Il]/g, '1')
+                .replace(/(\d)\s*\.\s*(\d)/g, '$1.$2')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function extractDistanceFromText(text) {
+            const normalizedText = text
+                .split(/\s+/)
+                .map(normalizeOcrText)
+                .join(' ');
+
+            const distancePatterns = [
+                /(?:distance|ระยะทาง)\s*[:\-]?\s*(\d+(?:\.\d+)?)/i,
+                /(\d+(?:\.\d+)?)\s*(?:km|kms|kilometers?|กม\.?)/i,
+                /(?:km|kms|kilometers?|กม\.?)\s*[:\-]?\s*(\d+(?:\.\d+)?)/i
+            ];
+
+            for (const pattern of distancePatterns) {
+                const match = normalizedText.match(pattern);
+                if (!match) {
+                    continue;
+                }
+
+                const distance = Number(match[1]);
+                if (isReasonableDistance(distance)) {
+                    return distance;
+                }
+            }
+
+            const decimalMatches = [...normalizedText.matchAll(/\b(\d{1,3}\.\d{1,2})\b/g)]
+                .map(match => Number(match[1]))
+                .filter(isReasonableDistance);
+
+            if (decimalMatches.length === 1) {
+                return decimalMatches[0];
+            }
+
+            return null;
+        }
+
+        function isReasonableDistance(distance) {
+            return Number.isFinite(distance) && distance > 0 && distance <= 200;
+        }
 
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
