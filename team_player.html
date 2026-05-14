@@ -35,12 +35,34 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .nav-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
             color: #facc15;
             font-size: 18px;
             font-weight: bold;
             text-decoration: none;
             white-space: nowrap;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+        }
+        .nav-brand-text {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.15;
+        }
+        .nav-brand-subtitle {
+            margin-top: 2px;
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .nav-brand-icon {
+            width: 2.1em;
+            height: 2.1em;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            object-fit: cover;
         }
         .nav-links {
             display: flex;
@@ -354,7 +376,13 @@
 </head>
 <body>
     <nav class="nav-menu" aria-label="Main navigation">
-        <a class="nav-brand" href="index.html">MT Team Walk-Run</a>
+        <a class="nav-brand" href="index.html">
+            <img class="nav-brand-icon" src="images/walk-icon.png" alt="" aria-hidden="true">
+            <span class="nav-brand-text">
+                <span>MUMT Running Club</span>
+                <span class="nav-brand-subtitle">Team Running</span>
+            </span>
+        </a>
         <div class="nav-links">
             <a class="nav-link" href="index.html">
                 <svg class="icon icon-submit" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16v4H4v-4"></path></svg>

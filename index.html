@@ -77,12 +77,34 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .nav-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
             color: #facc15;
             font-size: 18px;
             font-weight: bold;
             text-decoration: none;
             white-space: nowrap;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+        }
+        .nav-brand-text {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.15;
+        }
+        .nav-brand-subtitle {
+            margin-top: 2px;
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .nav-brand-icon {
+            width: 2.1em;
+            height: 2.1em;
+            flex: 0 0 auto;
+            border-radius: 50%;
+            object-fit: cover;
         }
         .nav-links {
             display: flex;
@@ -232,10 +254,51 @@
             text-align: center;
             min-height: 20px;
         }
+        .status-message.success {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #bbf7d0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .status-check-icon {
+            width: 1.35em;
+            height: 1.35em;
+            flex: 0 0 auto;
+            stroke: currentColor;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
         .ocr-status {
             margin-top: 8px;
             font-size: 14px;
             opacity: 0.95;
+        }
+        .ocr-status.reading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+        .ocr-status.reading::before {
+            content: "";
+            width: 16px;
+            height: 16px;
+            flex: 0 0 auto;
+            border: 3px solid rgba(255, 255, 255, 0.45);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .ocr-status.reading::after {
+            content: "";
+            width: 1.5em;
+            text-align: left;
+            animation: readingDots 1.2s steps(4, end) infinite;
         }
         .upload-warning {
             display: none;
@@ -292,6 +355,21 @@
                 transform: rotate(360deg);
             }
         }
+        @keyframes readingDots {
+            0% {
+                content: "";
+            }
+            25% {
+                content: ".";
+            }
+            50% {
+                content: "..";
+            }
+            75%,
+            100% {
+                content: "...";
+            }
+        }
         @media (max-width: 768px) {
             body {
                 padding: 10px;
@@ -315,7 +393,13 @@
 </head>
 <body>
     <nav class="nav-menu" aria-label="Main navigation">
-        <a class="nav-brand" href="index.html">MT Team Walk-Run</a>
+        <a class="nav-brand" href="index.html">
+            <img class="nav-brand-icon" src="images/walk-icon.png" alt="" aria-hidden="true">
+            <span class="nav-brand-text">
+                <span>MUMT Running Club</span>
+                <span class="nav-brand-subtitle">Team Running</span>
+            </span>
+        </a>
         <div class="nav-links">
             <a class="nav-link active" href="index.html">
                 <svg class="icon icon-submit" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16v4H4v-4"></path></svg>
@@ -474,6 +558,11 @@
             }
         });
 
+        function setOcrStatus(message, isReading) {
+            ocrStatus.classList.toggle('reading', Boolean(isReading));
+            ocrStatus.textContent = message;
+        }
+
         imageUpload.addEventListener('change', async function() {
             const currentOcrRequestId = ++ocrRequestId;
             distanceInput.disabled = true;
@@ -487,7 +576,8 @@
                 fileName.textContent = 'ยังไม่ได้เลือกภาพ';
                 imagePreview.removeAttribute('src');
                 imagePreview.style.display = 'none';
-                ocrStatus.textContent = '';
+                setOcrStatus('');
+                distanceInput.disabled = false;
                 return;
             }
 
@@ -502,18 +592,19 @@
             } else {
                 imagePreview.removeAttribute('src');
                 imagePreview.style.display = 'none';
-                ocrStatus.textContent = 'ไฟล์นี้ไม่ใช่รูปภาพ ระบบจึงอ่านระยะทางไม่ได้';
+                setOcrStatus('ไฟล์นี้ไม่ใช่รูปภาพ ระบบจึงอ่านระยะทางไม่ได้');
                 distanceInput.disabled = false;
             }
         });
 
         async function fillDistanceFromImage(imageFile, requestId) {
             if (!window.Tesseract) {
-                ocrStatus.textContent = 'โหลดระบบ OCR ไม่สำเร็จ กรุณากรอกระยะทางเอง';
+                setOcrStatus('โหลดระบบ OCR ไม่สำเร็จ กรุณากรอกระยะทางเอง');
+                distanceInput.disabled = false;
                 return;
             }
 
-            ocrStatus.textContent = 'กำลังอ่านระยะทางจากรูปภาพ...';
+            setOcrStatus('กำลังอ่านระยะทางจากรูปภาพ', true);
 
             try {
                 const imageForOcr = await prepareImageForOcr(imageFile);
@@ -534,14 +625,14 @@
 
                 if (distance) {
                     distanceInput.value = distance.toFixed(2);
-                    ocrStatus.textContent = `อ่านระยะทางจากรูปได้ประมาณ ${distance.toFixed(2)} km`;
+                    setOcrStatus(`อ่านระยะทางจากรูปได้ประมาณ ${distance.toFixed(2)} km`);
                 } else {
-                    ocrStatus.textContent = 'อ่านระยะทางจากรูปไม่ได้ กรุณากรอกระยะทางเอง';
+                    setOcrStatus('อ่านระยะทางจากรูปไม่ได้ กรุณากรอกระยะทางเอง');
                 }
             } catch (error) {
                 console.error('OCR error:', error);
                 if (requestId === ocrRequestId) {
-                    ocrStatus.textContent = 'อ่านรูปภาพไม่สำเร็จ กรุณากรอกระยะทางเอง';
+                    setOcrStatus('อ่านรูปภาพไม่สำเร็จ กรุณากรอกระยะทางเอง');
                 }
             } finally {
                 if (requestId === ocrRequestId) {
@@ -838,6 +929,13 @@
             uploadWarning.classList.toggle('active', isActive);
         }
 
+        function setStatusMessage(message, isSuccess) {
+            statusMessage.classList.toggle('success', Boolean(isSuccess));
+            statusMessage.innerHTML = isSuccess
+                ? `<svg class="status-check-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span>${message}</span>`
+                : message;
+        }
+
         submitResult.addEventListener('click', async function() {
             const selectedTeam = teamSelect.value;
             const selectedPlayer = playerSelect.value;
@@ -870,7 +968,7 @@
             }
 
             setSubmittingState(true);
-            statusMessage.textContent = 'กำลังส่งข้อมูล กรุณารอสักครู่';
+            setStatusMessage('กำลังส่งข้อมูล กรุณารอสักครู่');
 
             try {
                 const imageData = await fileToBase64(imageFile);
@@ -888,7 +986,7 @@
                     })
                 })
                 .then(() => {
-                    statusMessage.textContent = 'ส่งข้อมูลและรูปภาพเรียบร้อยแล้ว';
+                    setStatusMessage('ส่งข้อมูลและรูปภาพเรียบร้อยแล้ว', true);
                     distanceInput.value = '';
                     imageUpload.value = '';
                     fileName.textContent = 'ยังไม่ได้เลือกภาพ';
@@ -901,14 +999,14 @@
                 })
                 .catch(error => {
                     console.error('Error submitting result:', error);
-                    statusMessage.textContent = 'ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่';
+                    setStatusMessage('ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่');
                 })
                 .finally(() => {
                     setSubmittingState(false);
                 });
             } catch (error) {
                 console.error('Error reading image:', error);
-                statusMessage.textContent = 'อ่านไฟล์ภาพไม่สำเร็จ กรุณาลองใหม่';
+                setStatusMessage('อ่านไฟล์ภาพไม่สำเร็จ กรุณาลองใหม่');
                 setSubmittingState(false);
             }
         });
