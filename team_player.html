@@ -208,9 +208,10 @@
         }
         .player-row {
             display: grid;
-            grid-template-columns: 56px 1fr 120px;
-            align-items: center;
-            gap: 12px;
+            grid-template-columns: 64px 1fr 120px;
+            align-items: stretch;
+            column-gap: 10px;
+            row-gap: 4px;
             padding: 14px;
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.16);
@@ -226,7 +227,7 @@
         }
         .player-row.team-carrier {
             position: relative;
-            grid-template-columns: 64px 1fr 130px;
+            grid-template-columns: 72px 1fr 130px;
             padding: 18px 14px;
             border: 1px solid rgba(255, 255, 255, 0.72);
             background: linear-gradient(135deg, rgba(56, 189, 248, 0.95), rgba(255, 255, 255, 0.22));
@@ -246,32 +247,19 @@
             font-weight: bold;
             letter-spacing: 0.06em;
         }
-        .rank-number {
-            display: grid;
-            place-items: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #ffffff, #dbeafe);
-            color: #075985;
-            font-weight: 800;
-            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 5px 12px rgba(14, 165, 233, 0.24);
-        }
-        .player-row.team-carrier .rank-number {
-            width: 48px;
-            height: 48px;
-            background: #052637;
-            color: #7dd3fc;
-            text-shadow: 0 2px 0 rgba(0, 0, 0, 0.32);
-            box-shadow: inset 0 0 0 2px rgba(125, 211, 252, 0.45), 0 8px 18px rgba(7, 89, 133, 0.28);
-        }
         .player-name {
             color: #f8fafc;
             font-weight: 800;
+            align-self: center;
+            line-height: 1.2;
             letter-spacing: 0.01em;
             text-shadow: 0 2px 4px rgba(15, 23, 42, 0.32), 0 0 12px rgba(56, 189, 248, 0.28);
             overflow-wrap: anywhere;
+        }
+        .player-rank {
+            margin-right: 6px;
+            color: #fde68a;
+            font-weight: 900;
         }
         .player-row.team-carrier .player-name {
             font-size: 20px;
@@ -280,14 +268,31 @@
         }
         .player-row.team-carrier .distance {
             font-size: 19px;
-            color: #064e3b;
-            text-shadow: 0 1px 0 rgba(236, 254, 255, 0.75);
+            color: #fdba74;
+            text-shadow: 0 0 10px rgba(253, 186, 116, 0.6), 0 2px 4px rgba(15, 23, 42, 0.28);
         }
         .distance {
             text-align: right;
             color: #bbf7d0;
             font-weight: 800;
+            align-self: center;
+            line-height: 1.2;
             text-shadow: 0 2px 4px rgba(15, 23, 42, 0.32), 0 0 10px rgba(34, 197, 94, 0.3);
+        }
+        .player-avatar {
+            width: 100%;
+            height: 100%;
+            align-self: stretch;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.72);
+            background: transparent;
+            box-shadow: 0 8px 16px rgba(15, 23, 42, 0.24);
+        }
+        .player-row.team-carrier .player-avatar {
+            border-color: rgba(7, 89, 133, 0.35);
+            box-shadow: 0 10px 18px rgba(7, 89, 133, 0.28);
         }
         .action-row {
             display: grid;
@@ -358,19 +363,16 @@
                 margin-bottom: 18px;
             }
             .player-row {
-                grid-template-columns: 48px 1fr;
+                grid-template-columns: 56px 1fr;
             }
             .player-row.team-carrier {
-                grid-template-columns: 56px 1fr;
+                grid-template-columns: 62px 1fr;
                 padding-top: 20px;
-            }
-            .player-row.team-carrier .rank-number {
-                width: 44px;
-                height: 44px;
             }
             .distance {
                 grid-column: 2;
                 text-align: left;
+                margin-top: -2px;
             }
         }
     </style>
@@ -435,6 +437,7 @@
         const loadingState = document.getElementById('loadingState');
         const loadingText = document.getElementById('loadingText');
         const selectedTeam = new URLSearchParams(window.location.search).get('team') || '';
+        const defaultPlayerAvatar = 'images/person.png';
         const defaultTeamImage = 'images/images_run.jpg';
         const teamImageMap = {
             'ละมุน pace แต่ race เกินร้อย': 'images/S__29016248.jpg',
@@ -490,24 +493,22 @@
                     row.classList.add('team-carrier');
                 }
 
-                const rankNumber = document.createElement('div');
-                rankNumber.className = 'rank-number';
-                if (index === 0) {
-                    rankNumber.innerHTML = '<svg class="icon icon-team" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 14.7 8.5 21 9.4l-4.5 4.4 1 6.2L12 17l-5.5 3 1-6.2L3 9.4l6.3-.9L12 3Z"></path></svg>';
-                    rankNumber.setAttribute('aria-label', 'อันดับ 1');
-                } else {
-                    rankNumber.textContent = index + 1;
-                }
 
                 const playerName = document.createElement('div');
                 playerName.className = 'player-name';
-                playerName.textContent = player.player;
+                playerName.innerHTML = '<span class="player-rank">#' + (index + 1) + '</span>' + player.player;
+
+                const playerAvatar = document.createElement('img');
+                playerAvatar.className = 'player-avatar';
+                playerAvatar.src = defaultPlayerAvatar;
+                playerAvatar.alt = 'รูปโปรไฟล์ ' + player.player;
+                playerAvatar.loading = 'lazy';
 
                 const distance = document.createElement('div');
                 distance.className = 'distance';
                 distance.textContent = toNumber(player.total_distance).toFixed(2) + ' km';
 
-                row.appendChild(rankNumber);
+                row.appendChild(playerAvatar);
                 row.appendChild(playerName);
                 row.appendChild(distance);
                 playerList.appendChild(row);

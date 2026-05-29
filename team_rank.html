@@ -165,9 +165,10 @@
         }
         .rank-row {
             display: grid;
-            grid-template-columns: 56px 72px 1fr 170px;
+            grid-template-columns: 72px 1fr 170px;
             align-items: center;
-            gap: 12px;
+            column-gap: 10px;
+            row-gap: 4px;
             padding: 14px;
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.16);
@@ -183,7 +184,7 @@
         }
         .rank-row.champion {
             position: relative;
-            grid-template-columns: 64px 84px 1fr 180px;
+            grid-template-columns: 84px 1fr 180px;
             padding: 18px 14px;
             border: 1px solid rgba(255, 255, 255, 0.72);
             background: linear-gradient(135deg, rgba(255, 214, 102, 0.95), rgba(255, 255, 255, 0.24));
@@ -203,40 +204,20 @@
             font-weight: bold;
             letter-spacing: 0.06em;
         }
-        .rank-number {
-            display: grid;
-            place-items: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #ffffff, #dbeafe);
-            color: #312e81;
-            font-size: 19px;
-            font-weight: 800;
-            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.85);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 5px 12px rgba(30, 64, 175, 0.22);
-        }
-        .rank-row.champion .rank-number {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(145deg, #fff7cc, #facc15);
-            color: #b45309;
-            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.78);
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55), 0 8px 18px rgba(202, 138, 4, 0.3);
-        }
         .team-photo {
-            width: 64px;
-            height: 64px;
+            width: 100%;
+            height: 100%;
+            align-self: center;
+            aspect-ratio: 1 / 1;
             border-radius: 8px;
             object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.72);
             background: rgba(255, 255, 255, 0.18);
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.22);
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.3);
         }
         .rank-row.champion .team-photo {
-            width: 76px;
-            height: 76px;
             border: 2px solid rgba(255, 255, 255, 0.7);
-            box-shadow: 0 10px 24px rgba(107, 78, 0, 0.28);
+            box-shadow: 0 14px 28px rgba(107, 78, 0, 0.38);
         }
         .rank-row.champion .team-name {
             font-size: 28px;
@@ -252,15 +233,29 @@
             color: #f8fafc;
             font-size: 22px;
             font-weight: 800;
+            align-self: center;
+            line-height: 1.2;
             letter-spacing: 0.01em;
             text-shadow: 0 2px 4px rgba(15, 23, 42, 0.32), 0 0 12px rgba(125, 211, 252, 0.28);
             overflow-wrap: anywhere;
+        }
+        .team-rank {
+            margin-right: 6px;
+            color: #f97316;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(249, 115, 22, 0.6), 0 1px 0 rgba(255, 255, 255, 0.45);
+        }
+        .team-rank.rank-top {
+            color: #fdba74;
+            text-shadow: 0 0 10px rgba(253, 186, 116, 0.65), 0 2px 4px rgba(15, 23, 42, 0.3);
         }
         .distance {
             text-align: right;
             color: #fde68a;
             font-size: 21px;
             font-weight: 800;
+            align-self: center;
+            line-height: 1.2;
             text-shadow: 0 2px 4px rgba(15, 23, 42, 0.34), 0 0 12px rgba(250, 204, 21, 0.34);
         }
         .refresh-button {
@@ -301,23 +296,11 @@
                 font-size: 1.5em;
             }
             .rank-row {
-                grid-template-columns: 48px 62px 1fr;
+                grid-template-columns: 62px 1fr;
             }
             .rank-row.champion {
-                grid-template-columns: 56px 68px 1fr;
+                grid-template-columns: 68px 1fr;
                 padding-top: 20px;
-            }
-            .rank-row.champion .rank-number {
-                width: 44px;
-                height: 44px;
-            }
-            .team-photo {
-                width: 56px;
-                height: 56px;
-            }
-            .rank-row.champion .team-photo {
-                width: 62px;
-                height: 62px;
             }
             .rank-row.champion .team-name {
                 font-size: 24px;
@@ -332,8 +315,9 @@
                 font-size: 18px;
             }
             .distance {
-                grid-column: 3;
+                grid-column: 2;
                 text-align: left;
+                margin-top: -2px;
             }
         }
     </style>
@@ -404,6 +388,14 @@
             return teamImageMap[normalizedTeamName] || defaultTeamImage;
         }
 
+        function getRankIcon(rank) {
+            const keycapIcons = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+            if (rank >= 1 && rank <= 10) {
+                return keycapIcons[rank - 1];
+            }
+            return '🏅' + rank;
+        }
+
         function normalizeRankData(rows) {
             const totals = new Map();
 
@@ -454,18 +446,10 @@
                     row.classList.add('champion');
                 }
 
-                const rankNumber = document.createElement('div');
-                rankNumber.className = 'rank-number';
-                if (index === 0) {
-                    rankNumber.innerHTML = '<svg class="icon icon-rank" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"></path><path d="M5 5H3v2a4 4 0 0 0 4 4"></path><path d="M19 5h2v2a4 4 0 0 1-4 4"></path></svg>';
-                    rankNumber.setAttribute('aria-label', 'อันดับ 1');
-                } else {
-                    rankNumber.textContent = index + 1;
-                }
 
                 const teamName = document.createElement('div');
                 teamName.className = 'team-name';
-                teamName.textContent = team.team_name;
+                teamName.innerHTML = '<span class="team-rank' + (index === 0 ? ' rank-top' : '') + '">' + getRankIcon(index + 1) + '</span>' + team.team_name;
 
                 const teamPhoto = document.createElement('img');
                 teamPhoto.className = 'team-photo';
@@ -477,7 +461,6 @@
                 distance.className = 'distance';
                 distance.textContent =  toNumber(team.total_distance).toFixed(2) + ' km';
 
-                row.appendChild(rankNumber);
                 row.appendChild(teamPhoto);
                 row.appendChild(teamName);
                 row.appendChild(distance);

@@ -144,6 +144,20 @@
             opacity: 0.95;
             overflow-wrap: anywhere;
         }
+        .player-title-player {
+            display: block;
+            font-size: 22px;
+            font-weight: 800;
+            color: #86efac;
+            text-shadow: 0 0 10px rgba(134, 239, 172, 0.55), 0 2px 4px rgba(15, 23, 42, 0.35);
+        }
+        .player-title-team {
+            display: block;
+            margin-top: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            opacity: 0.92;
+        }
         .team-image {
             display: block;
             width: min(100%, 360px);
@@ -207,6 +221,8 @@
         .distance {
             text-align: right;
             font-weight: bold;
+            color: #fef08a;
+            text-shadow: 0 0 10px rgba(254, 240, 138, 0.55), 0 2px 4px rgba(15, 23, 42, 0.35);
         }
         .image-link {
             display: flex;
@@ -468,7 +484,7 @@
                 return;
             }
 
-            playerTitle.textContent = selectedPlayer + ' - ' + selectedTeam;
+            playerTitle.innerHTML = '<span class="player-title-player">' + selectedPlayer + '</span><span class="player-title-team">' + selectedTeam + '</span>';
             teamImage.src = getTeamImage(selectedTeam);
             teamImage.alt = 'รูปทีม ' + selectedTeam;
             teamImage.hidden = false;
