@@ -294,6 +294,17 @@
             flex-wrap: wrap;
             gap: 8px;
         }
+        .line-player-picker {
+            display: none;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.35);
+        }
+        .line-player-picker p {
+            margin: 0 0 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
         .line-team-button {
             border: 1px solid rgba(255, 255, 255, 0.55);
             border-radius: 999px;
@@ -499,7 +510,11 @@
         <div id="lineTeamFallback" class="line-fallback" hidden>
             <p>หาก dropdown ของ LINE ใช้งานไม่ได้ ให้แตะเลือกทีมจากปุ่มด้านล่าง</p>
             <div id="lineTeamButtons" class="line-team-buttons"></div>
-            <a id="openBrowserButton" class="open-browser-button" href="#" target="_blank" rel="noopener">เปิดในเบราว์เซอร์หลัก</a>
+            <div id="linePlayerPicker" class="line-player-picker">
+                <p>หาก Select a player ใช้งานไม่ได้ ให้แตะเลือกผู้เล่นจากปุ่มด้านล่าง</p>
+                <div id="linePlayerButtons" class="line-team-buttons"></div>
+            </div>
+            <a id="openBrowserButton" class="open-browser-button" href="#" target="_self" rel="noopener">เปิดในเบราว์เซอร์หลัก</a>
         </div>
         <img id="teamImagePreview" class="team-image-preview" alt="" hidden>
 
@@ -526,7 +541,7 @@
             กำลังส่งผล กรุณาอย่าปิดหรือรีเฟรชหน้าเว็บจนกว่าจะส่งเสร็จ ไม่เช่นนั้นข้อมูลอาจส่งไม่สำเร็จ
         </div>
         <div id="statusMessage" class="status-message"></div>
-        <div class="version-label">version 1.02</div>
+        <div class="version-label">version 1.03</div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -535,6 +550,8 @@
         const teamSelect = document.getElementById('teamSelect');
         const lineTeamFallback = document.getElementById('lineTeamFallback');
         const lineTeamButtons = document.getElementById('lineTeamButtons');
+        const linePlayerPicker = document.getElementById('linePlayerPicker');
+        const linePlayerButtons = document.getElementById('linePlayerButtons');
         const openBrowserButton = document.getElementById('openBrowserButton');
         const teamImagePreview = document.getElementById('teamImagePreview');
         const playerSelect = document.getElementById('playerSelect');
@@ -648,6 +665,7 @@
             if (!isLineInAppBrowser) {
                 lineTeamFallback.hidden = true;
                 lineTeamFallback.style.display = 'none';
+                linePlayerPicker.style.display = 'none';
                 openBrowserButton.style.display = 'none';
                 return;
             }
@@ -666,8 +684,45 @@
 
             lineTeamFallback.hidden = false;
             lineTeamFallback.style.display = 'block';
-            openBrowserButton.href = window.location.href;
+            openBrowserButton.href = getExternalBrowserUrl();
             openBrowserButton.style.display = 'block';
+        }
+
+        function getExternalBrowserUrl() {
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('openExternalBrowser', '1');
+                return url.toString();
+            } catch (error) {
+                const hasQuery = window.location.href.indexOf('?') >= 0;
+                const hasParam = /(?:\?|&)openExternalBrowser=/.test(window.location.href);
+                if (hasParam) {
+                    return window.location.href;
+                }
+                return window.location.href + (hasQuery ? '&' : '?') + 'openExternalBrowser=1';
+            }
+        }
+
+        function renderLinePlayerButtons(players) {
+            linePlayerButtons.innerHTML = '';
+            if (!isLineInAppBrowser || !players.length) {
+                linePlayerPicker.style.display = 'none';
+                return;
+            }
+
+            players.forEach(player => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'line-team-button';
+                button.textContent = player;
+                button.addEventListener('click', function() {
+                    playerSelect.value = player;
+                    playerSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+                linePlayerButtons.appendChild(button);
+            });
+
+            linePlayerPicker.style.display = 'block';
         }
 
         function getTeamImage(teamName) {
@@ -691,11 +746,13 @@
                     playerSelect.appendChild(option);
                 });
                 playerSelect.disabled = false;
+                renderLinePlayerButtons(players);
             } else {
                 teamImagePreview.hidden = true;
                 teamImagePreview.style.display = 'none';
                 teamImagePreview.removeAttribute('src');
                 playerSelect.disabled = true;
+                renderLinePlayerButtons([]);
             }
         });
 
@@ -1154,6 +1211,7 @@
     </script>
 </body>
 </html>
+
 
 
 
