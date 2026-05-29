@@ -162,10 +162,11 @@
         .team-image {
             display: block;
             width: min(100%, 360px);
-            aspect-ratio: 16 / 9;
+            height: auto;
+            max-height: 420px;
             margin: 0 auto 24px;
             border-radius: 8px;
-            object-fit: cover;
+            object-fit: contain;
             background: rgba(255, 255, 255, 0.16);
             box-shadow: 0 14px 32px rgba(15, 23, 42, 0.26);
         }
@@ -434,9 +435,12 @@
         const loadingState = document.getElementById('loadingState');
         const loadingText = document.getElementById('loadingText');
         const selectedTeam = new URLSearchParams(window.location.search).get('team') || '';
-        const specialTeamName = 'ละมุน pace แต่ race เกินร้อย';
         const defaultTeamImage = 'images/images_run.jpg';
-        const specialTeamImage = 'images/S__29016248.jpg';
+        const teamImageMap = {
+            'ละมุน pace แต่ race เกินร้อย': 'images/S__29016248.jpg',
+            'ดิ อเวนเจอร์': 'images/avenger.jpg',
+            'พ่อบ้านเร่งฝีเท้า': 'images/S__158072845.jpg'
+        };
 
         function toNumber(value) {
             const number = Number(value);
@@ -444,7 +448,8 @@
         }
 
         function getTeamImage(teamName) {
-            return String(teamName || '').trim() === specialTeamName ? specialTeamImage : defaultTeamImage;
+            const normalizedTeamName = String(teamName || '').trim();
+            return teamImageMap[normalizedTeamName] || defaultTeamImage;
         }
 
         function normalizePlayerData(rows) {

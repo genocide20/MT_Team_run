@@ -248,6 +248,17 @@
             object-fit: contain;
             background: rgba(255, 255, 255, 0.14);
         }
+        .team-image-preview {
+            display: none;
+            width: min(100%, 360px);
+            height: auto;
+            max-height: 240px;
+            margin: 6px auto 20px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.14);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.2);
+        }
         .status-message {
             margin-top: 12px;
             font-size: 14px;
@@ -431,6 +442,7 @@
         <select id="teamSelect" disabled>
             <option value="">Select a team</option>
         </select>
+        <img id="teamImagePreview" class="team-image-preview" alt="" hidden>
 
         <label for="playerSelect">เลือกผู้เล่น:</label>
         <select id="playerSelect" disabled>
@@ -461,6 +473,7 @@
     <script>
         const apiUrl = 'https://script.google.com/macros/s/AKfycbxKYHJmyccYKISZL6NW3dbgnVc9svFwGAkARc0pnQ6lgRehTz7sIpAlgDerC4BiobvAbQ/exec';
         const teamSelect = document.getElementById('teamSelect');
+        const teamImagePreview = document.getElementById('teamImagePreview');
         const playerSelect = document.getElementById('playerSelect');
         const distanceInput = document.getElementById('distanceInput');
         const imageUpload = document.getElementById('imageUpload');
@@ -475,6 +488,12 @@
         let imagePreviewUrl = '';
         let isSubmitting = false;
         let ocrRequestId = 0;
+        const defaultTeamImage = 'images/images_run.jpg';
+        const teamImageMap = {
+            'ละมุน pace แต่ race เกินร้อย': 'images/S__29016248.jpg',
+            'ดิ อเวนเจอร์': 'images/avenger.jpg',
+            'พ่อบ้านเร่งฝีเท้า': 'images/S__158072845.jpg'
+        };
 
         const data = [
             { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'จารุณี ประเสริฐโสภณ' },
@@ -484,13 +503,20 @@
             { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'กนกวรรณ กิตตินิยม' },
             { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'ชลธิดา ยาระณะ' },
             { team_name: 'ละมุน pace แต่ race เกินร้อย', player: 'ธารารัตน์ ขาวเขียว' },
-            { team_name: 'พ่อบ้านใจกล้า', player: 'ส้มโอ' },
-            { team_name: 'พ่อบ้านใจกล้า', player: 'แตงโม' },
-            { team_name: 'พ่อบ้านใจกล้า', player: 'มะละกอ' },
-            { team_name: 'พ่อบ้านใจกล้า', player: 'มังคุด' },
-            { team_name: 'พ่อบ้านใจกล้า', player: 'ทุเรียน' },
-            { team_name: 'พ่อบ้านใจกล้า', player: 'เงาะ' },
-            { team_name: 'พ่อบ้านใจกล้า', player: 'กล้วย' }
+            { team_name: 'พ่อบ้านเร่งฝีเท้า', player: 'ส้มโอ' },
+            { team_name: 'พ่อบ้านเร่งฝีเท้า', player: 'แตงโม' },
+            { team_name: 'พ่อบ้านเร่งฝีเท้า', player: 'มะละกอ' },
+            { team_name: 'พ่อบ้านเร่งฝีเท้า', player: 'มังคุด' },
+            { team_name: 'พ่อบ้านเร่งฝีเท้า', player: 'ทุเรียน' },
+            { team_name: 'พ่อบ้านเร่งฝีเท้า', player: 'เงาะ' },
+            { team_name: 'พ่อบ้านเร่งฝีเท้า', player: 'กล้วย' },
+            { team_name: 'ดิ อเวนเจอร์', player: 'รุ่งโรจน์ เชิดตระกูลเกียรติ' },
+            { team_name: 'ดิ อเวนเจอร์', player: 'เนตินันท์ บุญญกูล' },
+            { team_name: 'ดิ อเวนเจอร์', player: 'ธนวัฒน์ พวดรักษา' },
+            { team_name: 'ดิ อเวนเจอร์', player: 'อาทิตย์ เพชรภู่' },
+            { team_name: 'ดิ อเวนเจอร์', player: 'อัครวัฒน์ อ่อนสดทวีชัย' },
+            { team_name: 'ดิ อเวนเจอร์', player: 'นฤชิต เกตุอ่ำ' },
+            { team_name: 'ดิ อเวนเจอร์', player: 'อภิวัฒน์ แสนกุล' }
         ];
 
         loadTeamData();
@@ -541,10 +567,19 @@
             return true;
         }
 
+        function getTeamImage(teamName) {
+            const normalizedTeamName = String(teamName || '').trim();
+            return teamImageMap[normalizedTeamName] || defaultTeamImage;
+        }
+
         teamSelect.addEventListener('change', function() {
             const selectedTeam = this.value;
             playerSelect.innerHTML = '<option value="">Select a player</option>';
             if (selectedTeam) {
+                teamImagePreview.src = getTeamImage(selectedTeam);
+                teamImagePreview.alt = 'รูปทีม ' + selectedTeam;
+                teamImagePreview.hidden = false;
+                teamImagePreview.style.display = 'block';
                 const players = data.filter(item => item.team_name === selectedTeam).map(item => item.player);
                 players.forEach(player => {
                     const option = document.createElement('option');
@@ -554,6 +589,9 @@
                 });
                 playerSelect.disabled = false;
             } else {
+                teamImagePreview.hidden = true;
+                teamImagePreview.style.display = 'none';
+                teamImagePreview.removeAttribute('src');
                 playerSelect.disabled = true;
             }
         });

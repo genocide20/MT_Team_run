@@ -144,6 +144,17 @@
             opacity: 0.95;
             overflow-wrap: anywhere;
         }
+        .team-image {
+            display: block;
+            width: min(100%, 360px);
+            height: auto;
+            max-height: 420px;
+            margin: 0 auto 24px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.16);
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.26);
+        }
         .status-message {
             margin: 12px 0;
             text-align: center;
@@ -318,6 +329,7 @@
             <span>ประวัติผู้เล่น</span>
         </h1>
         <div id="playerTitle" class="player-title"></div>
+        <img id="teamImage" class="team-image" alt="" hidden>
         <div id="loadingState" class="loading-state" role="status" aria-live="polite">
             <div class="loading-spinner" aria-hidden="true"></div>
             <span id="loadingText">กำลังโหลดประวัติ...</span>
@@ -339,6 +351,7 @@
     <script>
         const apiUrl = 'https://script.google.com/macros/s/AKfycbyLVYoa55lRiTeAAFsInE8OmwonTftQCquQF4eG6LiZvJ0IYVgIGR2MUqXj-p31vSndTQ/exec';
         const playerTitle = document.getElementById('playerTitle');
+        const teamImage = document.getElementById('teamImage');
         const historyList = document.getElementById('historyList');
         const statusMessage = document.getElementById('statusMessage');
         const refreshButton = document.getElementById('refreshButton');
@@ -348,10 +361,21 @@
         const params = new URLSearchParams(window.location.search);
         const selectedTeam = params.get('team') || '';
         const selectedPlayer = params.get('player') || '';
+        const defaultTeamImage = 'images/images_run.jpg';
+        const teamImageMap = {
+            'ละมุน pace แต่ race เกินร้อย': 'images/S__29016248.jpg',
+            'ดิ อเวนเจอร์': 'images/avenger.jpg',
+            'พ่อบ้านเร่งฝีเท้า': 'images/S__158072845.jpg'
+        };
 
         function toNumber(value) {
             const number = Number(value);
             return Number.isFinite(number) ? number : 0;
+        }
+
+        function getTeamImage(teamName) {
+            const normalizedTeamName = String(teamName || '').trim();
+            return teamImageMap[normalizedTeamName] || defaultTeamImage;
         }
 
         function toDate(value) {
@@ -438,12 +462,16 @@
             if (!selectedTeam || !selectedPlayer) {
                 loadingState.hidden = true;
                 playerTitle.textContent = 'ไม่พบข้อมูลผู้เล่น';
+                teamImage.hidden = true;
                 statusMessage.textContent = 'กรุณากลับไปเลือกผู้เล่นจากหน้ารายชื่อผู้เล่น';
                 refreshButton.disabled = true;
                 return;
             }
 
             playerTitle.textContent = selectedPlayer + ' - ' + selectedTeam;
+            teamImage.src = getTeamImage(selectedTeam);
+            teamImage.alt = 'รูปทีม ' + selectedTeam;
+            teamImage.hidden = false;
             backLink.href = 'team_player.html?team=' + encodeURIComponent(selectedTeam);
             setPageLoading(true);
             statusMessage.textContent = '';
