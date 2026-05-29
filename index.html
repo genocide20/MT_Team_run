@@ -259,6 +259,53 @@
             background: rgba(255, 255, 255, 0.14);
             box-shadow: 0 10px 22px rgba(15, 23, 42, 0.2);
         }
+        .line-fallback {
+            display: none;
+            margin: 0 0 16px;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .line-fallback p {
+            margin: 0 0 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .open-browser-button {
+            display: none;
+            width: 100%;
+            margin: 10px 0 0;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+        }
+        .open-browser-button:active {
+            background: rgba(255, 255, 255, 0.32);
+        }
+        .line-team-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .line-team-button {
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 7px 12px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .line-team-button:active {
+            background: rgba(255, 255, 255, 0.32);
+        }
         .status-message {
             margin-top: 12px;
             font-size: 14px;
@@ -449,6 +496,11 @@
         <select id="teamSelect" disabled>
             <option value="">Select Team</option>
         </select>
+        <div id="lineTeamFallback" class="line-fallback" hidden>
+            <p>หาก dropdown ของ LINE ใช้งานไม่ได้ ให้แตะเลือกทีมจากปุ่มด้านล่าง</p>
+            <div id="lineTeamButtons" class="line-team-buttons"></div>
+            <a id="openBrowserButton" class="open-browser-button" href="#" target="_blank" rel="noopener">เปิดในเบราว์เซอร์หลัก</a>
+        </div>
         <img id="teamImagePreview" class="team-image-preview" alt="" hidden>
 
         <label for="playerSelect">เลือกผู้เล่น:</label>
@@ -474,13 +526,16 @@
             กำลังส่งผล กรุณาอย่าปิดหรือรีเฟรชหน้าเว็บจนกว่าจะส่งเสร็จ ไม่เช่นนั้นข้อมูลอาจส่งไม่สำเร็จ
         </div>
         <div id="statusMessage" class="status-message"></div>
-        <div class="version-label">version 1.01</div>
+        <div class="version-label">version 1.02</div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script>
         const apiUrl = 'https://script.google.com/macros/s/AKfycbxKYHJmyccYKISZL6NW3dbgnVc9svFwGAkARc0pnQ6lgRehTz7sIpAlgDerC4BiobvAbQ/exec';
         const teamSelect = document.getElementById('teamSelect');
+        const lineTeamFallback = document.getElementById('lineTeamFallback');
+        const lineTeamButtons = document.getElementById('lineTeamButtons');
+        const openBrowserButton = document.getElementById('openBrowserButton');
         const teamImagePreview = document.getElementById('teamImagePreview');
         const playerSelect = document.getElementById('playerSelect');
         const distanceInput = document.getElementById('distanceInput');
@@ -496,6 +551,7 @@
         let imagePreviewUrl = '';
         let isSubmitting = false;
         let ocrRequestId = 0;
+        const isLineInAppBrowser = /Line\//i.test(navigator.userAgent || '');
         const defaultTeamImage = 'images/images_run.jpg';
         const teamImageMap = {
             'ละมุน pace แต่ race เกินร้อย': 'images/S__29016248.jpg',
@@ -583,7 +639,35 @@
                 option.textContent = team;
                 teamSelect.appendChild(option);
             });
+            buildLineTeamButtons(teams);
             return true;
+        }
+
+        function buildLineTeamButtons(teams) {
+            lineTeamButtons.innerHTML = '';
+            if (!isLineInAppBrowser) {
+                lineTeamFallback.hidden = true;
+                lineTeamFallback.style.display = 'none';
+                openBrowserButton.style.display = 'none';
+                return;
+            }
+
+            teams.forEach(team => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'line-team-button';
+                button.textContent = team;
+                button.addEventListener('click', function() {
+                    teamSelect.value = team;
+                    teamSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+                lineTeamButtons.appendChild(button);
+            });
+
+            lineTeamFallback.hidden = false;
+            lineTeamFallback.style.display = 'block';
+            openBrowserButton.href = window.location.href;
+            openBrowserButton.style.display = 'block';
         }
 
         function getTeamImage(teamName) {
@@ -1070,5 +1154,6 @@
     </script>
 </body>
 </html>
+
 
 
