@@ -564,7 +564,7 @@
             กำลังส่งผล กรุณาอย่าปิดหรือรีเฟรชหน้าเว็บจนกว่าจะส่งเสร็จ ไม่เช่นนั้นข้อมูลอาจส่งไม่สำเร็จ
         </div>
         <div id="statusMessage" class="status-message"></div>
-        <div class="version-label">version 1.07</div>
+        <div class="version-label">version 1.08</div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -591,6 +591,7 @@
         let imagePreviewUrl = '';
         let isSubmitting = false;
         let ocrRequestId = 0;
+        const OCR_TIMEOUT_MS = 5000;
         const isLineInAppBrowser = /Line\//i.test(navigator.userAgent || '');
         const defaultTeamImage = 'images/images_run.jpg';
         const teamImageMap = {
@@ -828,20 +829,13 @@
             setOcrStatus('กำลังอ่านระยะทางจากรูปภาพ', true);
 
             try {
-                const imageForOcr = await prepareImageForOcr(imageFile);
-                const result = await recognizeDistanceImage(imageForOcr);
+                const distance = await Promise.race([
+                    readDistanceFromImageWithOcr(imageFile, requestId),
+                    createOcrTimeoutPromise(OCR_TIMEOUT_MS)
+                ]);
+
                 if (requestId !== ocrRequestId) {
                     return;
-                }
-
-                let distance = extractDistanceFromOcrResult(result);
-                if (shouldTryDistanceCrop(distance)) {
-                    const croppedDistance = await readDistanceFromCrops(imageFile, requestId);
-                    if (croppedDistance && shouldPreferCroppedDistance(distance, croppedDistance)) {
-                        distance = croppedDistance;
-                    } else if (Number.isInteger(distance)) {
-                        distance = null;
-                    }
                 }
 
                 if (distance) {
@@ -853,13 +847,43 @@
             } catch (error) {
                 console.error('OCR error:', error);
                 if (requestId === ocrRequestId) {
-                    setOcrStatus('อ่านรูปภาพไม่สำเร็จ กรุณากรอกระยะทางเอง');
+                    if (error && error.message === 'OCR_TIMEOUT') {
+                        setOcrStatus('อ่านระยะทางเกิน 5 วินาที กรุณากรอกระยะทางเอง');
+                    } else {
+                        setOcrStatus('อ่านรูปภาพไม่สำเร็จ กรุณากรอกระยะทางเอง');
+                    }
                 }
             } finally {
                 if (requestId === ocrRequestId) {
                     distanceInput.disabled = false;
                 }
             }
+        }
+
+        function createOcrTimeoutPromise(timeoutMs) {
+            return new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('OCR_TIMEOUT')), timeoutMs);
+            });
+        }
+
+        async function readDistanceFromImageWithOcr(imageFile, requestId) {
+            const imageForOcr = await prepareImageForOcr(imageFile);
+            const result = await recognizeDistanceImage(imageForOcr);
+            if (requestId !== ocrRequestId) {
+                return null;
+            }
+
+            let distance = extractDistanceFromOcrResult(result);
+            if (shouldTryDistanceCrop(distance)) {
+                const croppedDistance = await readDistanceFromCrops(imageFile, requestId);
+                if (croppedDistance && shouldPreferCroppedDistance(distance, croppedDistance)) {
+                    distance = croppedDistance;
+                } else if (Number.isInteger(distance)) {
+                    distance = null;
+                }
+            }
+
+            return distance;
         }
 
         function recognizeDistanceImage(imageForOcr) {
