@@ -265,6 +265,13 @@
             text-align: center;
             min-height: 20px;
         }
+        .version-label {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.82);
+            letter-spacing: 0.02em;
+        }
         .status-message.success {
             display: flex;
             align-items: center;
@@ -440,7 +447,7 @@
 
         <label for="teamSelect">เลือกทีม:</label>
         <select id="teamSelect" disabled>
-            <option value="">Select a team</option>
+            <option value="">Select Team</option>
         </select>
         <img id="teamImagePreview" class="team-image-preview" alt="" hidden>
 
@@ -467,6 +474,7 @@
             กำลังส่งผล กรุณาอย่าปิดหรือรีเฟรชหน้าเว็บจนกว่าจะส่งเสร็จ ไม่เช่นนั้นข้อมูลอาจส่งไม่สำเร็จ
         </div>
         <div id="statusMessage" class="status-message"></div>
+        <div class="version-label">version 1.01</div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -535,6 +543,8 @@
             playerSelect.innerHTML = '<option value="">Select a player</option>';
             if (populateTeams()) {
                 setTeamDataLoading(false);
+                teamSelect.disabled = false;
+                teamSelect.removeAttribute('disabled');
             } else {
                 loadingState.hidden = true;
                 teamSelect.disabled = true;
@@ -551,9 +561,18 @@
                 statusMessage.textContent = 'Team data is invalid. Response: ' + JSON.stringify(data);
                 return false;
             }
-            const teams = [...new Set(data.map(item => item.team_name))];
+            const teams = [];
+            const seenTeams = Object.create(null);
+            for (let i = 0; i < data.length; i += 1) {
+                const teamName = data[i] && data[i].team_name ? String(data[i].team_name) : '';
+                if (!teamName || seenTeams[teamName]) {
+                    continue;
+                }
+                seenTeams[teamName] = true;
+                teams.push(teamName);
+            }
             console.log('Teams:', teams);
-            teamSelect.innerHTML = '<option value="">Select a team</option>';
+            teamSelect.innerHTML = '<option value="">Select Team</option>';
             if (teams.length === 0) {
                 statusMessage.textContent = 'No teams found in data';
                 return false;
@@ -1051,3 +1070,5 @@
     </script>
 </body>
 </html>
+
+
