@@ -262,14 +262,17 @@
         .line-fallback {
             display: none;
             margin: 0 0 16px;
-            padding: 12px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.12);
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.2);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
         }
         .line-fallback p {
             margin: 0 0 10px;
             font-size: 13px;
             font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
         }
         .open-browser-button {
             display: none;
@@ -299,8 +302,8 @@
             box-shadow: 0 5px 12px rgba(15, 23, 42, 0.26);
         }
         .line-team-buttons {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr;
             gap: 8px;
         }
         .line-player-picker {
@@ -315,16 +318,27 @@
             font-weight: 600;
         }
         .line-team-button {
-            border: 1px solid rgba(255, 255, 255, 0.55);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.2);
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid rgba(255, 255, 255, 0.58);
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.14));
             color: white;
-            padding: 7px 12px;
-            font-size: 13px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: left;
             cursor: pointer;
+            transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+        }
+        .line-team-button:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.2));
+            box-shadow: 0 6px 12px rgba(15, 23, 42, 0.2);
+            transform: translateY(-1px);
         }
         .line-team-button:active {
-            background: rgba(255, 255, 255, 0.32);
+            transform: translateY(1px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.12));
         }
         .status-message {
             margin-top: 12px;
@@ -550,7 +564,7 @@
             กำลังส่งผล กรุณาอย่าปิดหรือรีเฟรชหน้าเว็บจนกว่าจะส่งเสร็จ ไม่เช่นนั้นข้อมูลอาจส่งไม่สำเร็จ
         </div>
         <div id="statusMessage" class="status-message"></div>
-        <div class="version-label">version 1.05</div>
+        <div class="version-label">version 1.06</div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
