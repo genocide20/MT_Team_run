@@ -225,25 +225,82 @@
             text-shadow: 0 0 10px rgba(254, 240, 138, 0.55), 0 2px 4px rgba(15, 23, 42, 0.35);
         }
         .image-link {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
-            padding: 9px 10px;
-            border-radius: 5px;
-            background: white;
-            color: #333;
+            gap: 0;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(226, 232, 240, 0.92));
+            color: #0f172a;
             text-align: center;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 800;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
         }
-        .image-link.disabled {
-            background: rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.72);
+        .image-link:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.2);
+        }
+        .image-link .icon {
+            color: #0ea5e9;
+            flex: 0 0 auto;
+            width: 22px;
+            height: 22px;
+        }
+        .image-link.has-image {
+            background: linear-gradient(135deg, #ecfeff, #dbeafe);
+            border-color: rgba(14, 165, 233, 0.28);
+            color: #075985;
+        }
+        .image-link.no-image {
+            background: rgba(255, 255, 255, 0.26);
+            border-color: rgba(255, 255, 255, 0.18);
+            color: rgba(255, 255, 255, 0.84);
+            box-shadow: none;
             pointer-events: none;
         }
-        .image-link.disabled .icon {
-            color: rgba(255, 255, 255, 0.55);
+        .image-link.no-image .icon {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .pagination-info {
+            font-weight: 600;
+        }
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+        .pagination-button {
+            min-width: 88px;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            font: inherit;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .pagination-button:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.28);
+        }
+        .pagination-button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
         }
         .action-row {
             display: grid;
@@ -306,10 +363,35 @@
                 font-size: 1.5em;
             }
             .history-row {
-                grid-template-columns: 1fr;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .date {
+                flex: 1 1 auto;
+                min-width: 0;
             }
             .distance {
-                text-align: left;
+                flex: 0 0 auto;
+                white-space: nowrap;
+                text-align: right;
+            }
+            .image-link {
+                flex: 0 0 auto;
+                width: 36px;
+                height: 36px;
+            }
+            .image-link .icon {
+                width: 20px;
+                height: 20px;
+            }
+            .pagination-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .pagination-controls {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
@@ -352,6 +434,13 @@
         </div>
         <div id="statusMessage" class="status-message"></div>
         <div id="historyList" class="history-list"></div>
+        <div id="paginationBar" class="pagination-bar" hidden>
+            <div id="paginationInfo" class="pagination-info"></div>
+            <div class="pagination-controls">
+                <button id="prevPageButton" class="pagination-button" type="button">ก่อนหน้า</button>
+                <button id="nextPageButton" class="pagination-button" type="button">ถัดไป</button>
+            </div>
+        </div>
         <div class="action-row">
             <a id="backLink" class="button back-button" href="team_rank.html">
                 <svg class="icon icon-back" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
@@ -370,6 +459,10 @@
         const teamImage = document.getElementById('teamImage');
         const historyList = document.getElementById('historyList');
         const statusMessage = document.getElementById('statusMessage');
+        const paginationBar = document.getElementById('paginationBar');
+        const paginationInfo = document.getElementById('paginationInfo');
+        const prevPageButton = document.getElementById('prevPageButton');
+        const nextPageButton = document.getElementById('nextPageButton');
         const refreshButton = document.getElementById('refreshButton');
         const backLink = document.getElementById('backLink');
         const loadingState = document.getElementById('loadingState');
@@ -377,7 +470,10 @@
         const params = new URLSearchParams(window.location.search);
         const selectedTeam = params.get('team') || '';
         const selectedPlayer = params.get('player') || '';
+        const pageSize = 10;
         const defaultTeamImage = 'images/images_run.jpg';
+        let allHistoryItems = [];
+        let currentPage = 1;
         const teamImageMap = {
             'ละมุน pace แต่ race เกินร้อย': 'images/S__29016248.jpg',
             'ดิ อเวนเจอร์': 'images/avenger.jpg',
@@ -400,17 +496,19 @@
             return Number.isNaN(date.getTime()) ? null : date;
         }
 
-        function formatDate(value) {
+        function formatDateTime(value) {
             const date = toDate(value);
 
             if (!date) {
                 return value || '-';
             }
 
-            return date.toLocaleDateString('th-TH', {
+            return date.toLocaleString('th-TH', {
                 year: 'numeric',
                 month: 'short',
-                day: 'numeric'
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
             });
         }
 
@@ -427,46 +525,90 @@
             });
         }
 
-        function renderHistory(items) {
+        function createHistoryRow(item) {
+            const row = document.createElement('div');
+            row.className = 'history-row';
+
+            const date = document.createElement('div');
+            date.className = 'date';
+            date.textContent = formatDateTime(item.timestamp);
+
+            const distance = document.createElement('div');
+            distance.className = 'distance';
+            distance.textContent = toNumber(item.distance).toFixed(2) + ' km';
+
+            const imageLink = document.createElement('a');
+            imageLink.className = 'image-link ' + (item.image_url ? 'has-image' : 'no-image');
+            imageLink.innerHTML = '<svg class="icon icon-image" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10.5" r="1.5"></circle><path d="m21 15-5-5L5 19"></path></svg>';
+
+            if (item.image_url) {
+                imageLink.href = item.image_url;
+                imageLink.target = '_blank';
+                imageLink.rel = 'noopener';
+                imageLink.setAttribute('aria-label', 'ดูรูปภาพผลลงของ ' + selectedPlayer);
+                imageLink.title = 'ดูรูปภาพ';
+            } else {
+                imageLink.href = '#';
+                imageLink.setAttribute('aria-disabled', 'true');
+                imageLink.tabIndex = -1;
+                imageLink.setAttribute('aria-label', 'ไม่มีรูป');
+                imageLink.title = 'ไม่มีรูป';
+            }
+
+            row.appendChild(date);
+            row.appendChild(distance);
+            row.appendChild(imageLink);
+            return row;
+        }
+
+        function updatePaginationControls() {
+
+            const totalItems = allHistoryItems.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+            const startIndex = totalItems ? ((currentPage - 1) * pageSize) + 1 : 0;
+            const endIndex = Math.min(currentPage * pageSize, totalItems);
+
+            paginationBar.hidden = totalItems === 0;
+
+            if (!totalItems) {
+                paginationInfo.textContent = '';
+                prevPageButton.disabled = true;
+                nextPageButton.disabled = true;
+                return;
+            }
+
+            paginationInfo.textContent = 'แสดง ' + startIndex + '-' + endIndex + ' จาก ' + totalItems + ' รายการ';
+            prevPageButton.disabled = currentPage <= 1;
+            nextPageButton.disabled = currentPage >= totalPages;
+        }
+
+        function renderCurrentPage() {
             historyList.innerHTML = '';
 
-            if (!items.length) {
+            if (!allHistoryItems.length) {
                 statusMessage.textContent = 'ยังไม่มีประวัติระยะทางของผู้เล่นคนนี้';
+                updatePaginationControls();
                 return;
             }
 
             statusMessage.textContent = '';
 
-            items.forEach(item => {
-                const row = document.createElement('div');
-                row.className = 'history-row';
+            const totalPages = Math.max(1, Math.ceil(allHistoryItems.length / pageSize));
+            currentPage = Math.min(Math.max(currentPage, 1), totalPages);
+            const startIndex = (currentPage - 1) * pageSize;
+            const pageItems = allHistoryItems.slice(startIndex, startIndex + pageSize);
 
-                const date = document.createElement('div');
-                date.className = 'date';
-                date.textContent = formatDate(item.timestamp);
-
-                const distance = document.createElement('div');
-                distance.className = 'distance';
-                distance.textContent = toNumber(item.distance).toFixed(2) + ' km';
-
-                const imageLink = document.createElement('a');
-                imageLink.className = 'image-link';
-                imageLink.innerHTML = '<svg class="icon icon-image" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10.5" r="1.5"></circle><path d="m21 15-5-5L5 19"></path></svg><span>' + (item.image_url ? 'ดูรูปภาพ' : 'ไม่มีรูป') + '</span>';
-
-                if (item.image_url) {
-                    imageLink.href = item.image_url;
-                    imageLink.target = '_blank';
-                    imageLink.rel = 'noopener';
-                } else {
-                    imageLink.href = '#';
-                    imageLink.classList.add('disabled');
-                }
-
-                row.appendChild(date);
-                row.appendChild(distance);
-                row.appendChild(imageLink);
-                historyList.appendChild(row);
+            pageItems.forEach(item => {
+                historyList.appendChild(createHistoryRow(item));
             });
+
+            updatePaginationControls();
+        }
+
+        function renderHistory(items) {
+            allHistoryItems = items;
+            currentPage = 1;
+            renderCurrentPage();
         }
 
         function setPageLoading(isLoading, message) {
@@ -493,6 +635,7 @@
             setPageLoading(true);
             statusMessage.textContent = '';
             historyList.innerHTML = '';
+            paginationBar.hidden = true;
 
             fetch(apiUrl + '?action=player_detail&team=' + encodeURIComponent(selectedTeam) + '&player=' + encodeURIComponent(selectedPlayer))
                 .then(response => response.json())
@@ -509,8 +652,26 @@
                 });
         }
 
+        prevPageButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage -= 1;
+                renderCurrentPage();
+            }
+        });
+
+        nextPageButton.addEventListener('click', () => {
+            const totalPages = Math.max(1, Math.ceil(allHistoryItems.length / pageSize));
+            if (currentPage < totalPages) {
+                currentPage += 1;
+                renderCurrentPage();
+            }
+        });
+
         refreshButton.addEventListener('click', loadHistory);
         loadHistory();
     </script>
 </body>
 </html>
+
+
+
