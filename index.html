@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -225,6 +225,22 @@
         .submit-button:disabled {
             cursor: wait;
             opacity: 0.9;
+        }
+        .submit-warning {
+            display: block;
+            margin-top: 8px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 4px 10px;
+            color: #ef4444;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: center;
+            background: rgba(254, 226, 226, 0.96);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.12);
         }
         .button-spinner {
             width: 18px;
@@ -560,6 +576,7 @@
         </div>
 
         <button id="submitResult" class="submit-button" type="button" disabled>ส่งผล</button>
+        <div class="submit-warning">ไม่อนุญาติส่งผลย้อนหลัง</div>
         <div id="uploadWarning" class="upload-warning" role="alert">
             กำลังส่งผล กรุณาอย่าปิดหรือรีเฟรชหน้าเว็บจนกว่าจะส่งเสร็จ ไม่เช่นนั้นข้อมูลอาจส่งไม่สำเร็จ
         </div>
@@ -1266,6 +1283,7 @@
     </script>
 </body>
 </html>
+
 
 
 
