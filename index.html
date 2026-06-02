@@ -711,30 +711,11 @@
 
         function buildLineTeamButtons(teams) {
             lineTeamButtons.innerHTML = '';
-            if (!isLineInAppBrowser) {
-                lineTeamFallback.hidden = true;
-                lineTeamFallback.style.display = 'none';
-                linePlayerPicker.style.display = 'none';
-                openBrowserButton.style.display = 'none';
-                return;
-            }
-
-            teams.forEach(team => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'line-team-button';
-                button.textContent = team;
-                button.addEventListener('click', function() {
-                    teamSelect.value = team;
-                    teamSelect.dispatchEvent(new Event('change', { bubbles: true }));
-                });
-                lineTeamButtons.appendChild(button);
-            });
-
-            lineTeamFallback.hidden = false;
-            lineTeamFallback.style.display = 'block';
+            lineTeamFallback.hidden = true;
+            lineTeamFallback.style.display = 'none';
+            linePlayerPicker.style.display = 'none';
             openBrowserButton.href = getExternalBrowserUrl();
-            openBrowserButton.style.display = 'block';
+            openBrowserButton.style.display = isLineInAppBrowser ? 'block' : 'none';
         }
 
         function getExternalBrowserUrl() {
