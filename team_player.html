@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เธฃเธฒเธขเธเธทเนเธญเธเธนเนเน€เธฅเนเธเนเธเธ—เธตเธก</title>
+    <title>รายชื่อผู้เล่นในทีม</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -403,15 +403,15 @@
         <div class="nav-links">
             <a class="nav-link" href="index.html">
                 <svg class="icon icon-submit" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16v4H4v-4"></path></svg>
-                <span>เธชเนเธเธเธฅ</span>
+                <span>ส่งผล</span>
             </a>
             <a class="nav-link active" href="team_rank.html">
                 <svg class="icon icon-rank" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"></path><path d="M5 5H3v2a4 4 0 0 0 4 4"></path><path d="M19 5h2v2a4 4 0 0 1-4 4"></path></svg>
-                <span>เธญเธฑเธเธ”เธฑเธ</span>
+                <span>อันดับ</span>
             </a>
             <a class="nav-link" href="https://mumt-happyorganization.netlify.app/">
                 <svg class="icon icon-score" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M7 16v-5"></path><path d="M12 16V7"></path><path d="M17 16v-8"></path></svg>
-                <span>เธเธฐเนเธเธ</span>
+                <span>คะแนน</span>
             </a>
         </div>
     </nav>
@@ -419,28 +419,28 @@
     <main class="container">
         <h1>
             <svg class="icon icon-team" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.9"></path><path d="M16 3.1a4 4 0 0 1 0 7.8"></path></svg>
-            <span>เธฃเธฒเธขเธเธทเนเธญเธเธนเนเน€เธฅเนเธ</span>
+            <span>รายชื่อผู้เล่น</span>
         </h1>
         <div id="teamTitle" class="team-title"></div>
         <img id="teamImage" class="team-image" alt="" hidden>
         <div id="loadingState" class="loading-state" role="status" aria-live="polite">
             <div class="loading-spinner" aria-hidden="true"></div>
-            <span id="loadingText">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธนเนเน€เธฅเนเธ...</span>
+            <span id="loadingText">กำลังโหลดข้อมูลผู้เล่น...</span>
         </div>
         <div id="statusMessage" class="status-message"></div>
         <div id="playerList" class="player-list"></div>
         <div class="action-row">
             <a class="button back-button" href="team_rank.html">
                 <svg class="icon icon-back" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
-                <span>เธเธฅเธฑเธเธซเธเนเธฒเธญเธฑเธเธ”เธฑเธ</span>
+                <span>กลับหน้าอันดับ</span>
             </a>
             <button id="refreshButton" class="button refresh-button" type="button">
                 <svg class="icon icon-refresh" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2"></path><path d="M3 12a9 9 0 0 1 15.5-6.2"></path><path d="M18 2v4h-4"></path><path d="M6 22v-4h4"></path></svg>
-                <span>เนเธซเธฅเธ”เนเธซเธกเน</span>
+                <span>โหลดใหม่</span>
             </button>
         </div>
         <footer class="page-footer">
-            <p class="page-footer-text">เธเธ”เธ—เธตเนเธเธทเนเธญเน€เธเธทเนเธญเธ”เธนเธฃเธฐเธขเธฐเธ—เธฒเธเนเธ•เนเธฅเธฐเธงเธฑเธ</p>
+            <p class="page-footer-text">กดที่ชื่อเพื่อดูระยะทางแต่ละวัน</p>
         </footer>
     </main>
 
@@ -457,14 +457,14 @@
         const defaultPlayerAvatar = 'images/person.png';
         const defaultTeamImage = 'images/images_run.jpg';
         const teamImageMap = {
-            'เธฅเธฐเธกเธธเธ pace เนเธ•เน race เน€เธเธดเธเธฃเนเธญเธข': 'images/S__29016248.jpg',
-            'เธ”เธด เธญเน€เธงเธเน€เธเธญเธฃเน': 'images/avenger.jpg',
-            'เธเนเธญเธเนเธฒเธเน€เธฃเนเธเธเธตเน€เธ—เนเธฒ': 'images/S__158072845.jpg',
+            'ละมุน pace แต่ race เกินร้อย': 'images/S__29016248.jpg',
+            'ดิ อเวนเจอร์': 'images/avenger.jpg',
+            'พ่อบ้านเร่งฝีเท้า': 'images/S__158072845.jpg',
             'Runaway V2': 'images/runaway.png',
             'Run Tum Mile': 'images/runtummile.png',
             'ชื่อทีมไม่มีผล': 'images/IT.png',
-            'เธเธเธเธฑเนเธเธเธฃเนเธเธฅเธ': 'images/IMG_7271.jpeg',
-            'เธฃเธฐเธขเธฐเธเธตเนเธเนเธฒเธเธเธงเธฒเธกเน€เธซเนเธเธเธญเธ': 'images/natchaya.png'
+            'ชนชั้นปรแปลก': 'images/IMG_7271.jpeg',
+            'ระยะนี้ผ่านความเห็นชอบ': 'images/natchaya.png'
         };
 
         function toNumber(value) {
@@ -489,7 +489,7 @@
             playerList.innerHTML = '';
 
             if (!players.length) {
-                statusMessage.textContent = 'เธขเธฑเธเนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธเธนเนเน€เธฅเนเธเนเธเธ—เธตเธกเธเธตเน';
+                statusMessage.textContent = 'ยังไม่มีข้อมูลผู้เล่นในทีมนี้';
                 return;
             }
 
@@ -501,7 +501,7 @@
                 const playerUrl = 'player_detail.html?team=' + encodeURIComponent(selectedTeam) + '&player=' + encodeURIComponent(player.player);
                 row.setAttribute('role', 'link');
                 row.setAttribute('tabindex', '0');
-                row.setAttribute('aria-label', 'เธ”เธนเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เธเธนเนเน€เธฅเนเธ ' + player.player);
+                row.setAttribute('aria-label', 'ดูรายละเอียดผู้เล่น ' + player.player);
                 row.addEventListener('click', () => {
                     window.location.href = playerUrl;
                 });
@@ -523,7 +523,7 @@
                 const playerAvatar = document.createElement('img');
                 playerAvatar.className = 'player-avatar';
                 playerAvatar.src = defaultPlayerAvatar;
-                playerAvatar.alt = 'เธฃเธนเธเนเธเธฃเนเธเธฅเน ' + player.player;
+                playerAvatar.alt = 'รูปโปรไฟล์ ' + player.player;
                 playerAvatar.loading = 'lazy';
 
                 const distance = document.createElement('div');
@@ -539,23 +539,23 @@
 
         function setPageLoading(isLoading, message) {
             loadingState.hidden = !isLoading;
-            loadingText.textContent = message || 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธนเนเน€เธฅเนเธ...';
+            loadingText.textContent = message || 'กำลังโหลดข้อมูลผู้เล่น...';
             refreshButton.disabled = isLoading;
         }
 
         function loadPlayers() {
             if (!selectedTeam) {
                 loadingState.hidden = true;
-                teamTitle.textContent = 'เนเธกเนเธเธเธเธทเนเธญเธ—เธตเธก';
+                teamTitle.textContent = 'ไม่พบชื่อทีม';
                 teamImage.hidden = true;
-                statusMessage.textContent = 'เธเธฃเธธเธ“เธฒเธเธฅเธฑเธเนเธเน€เธฅเธทเธญเธเธ—เธตเธกเธเธฒเธเธซเธเนเธฒเธญเธฑเธเธ”เธฑเธ';
+                statusMessage.textContent = 'กรุณากลับไปเลือกทีมจากหน้าอันดับ';
                 refreshButton.disabled = true;
                 return;
             }
 
             teamTitle.textContent = selectedTeam;
             teamImage.src = getTeamImage(selectedTeam);
-            teamImage.alt = 'เธฃเธนเธเธ—เธตเธก ' + selectedTeam;
+            teamImage.alt = 'รูปทีม ' + selectedTeam;
             teamImage.hidden = false;
             setPageLoading(true);
             statusMessage.textContent = '';
@@ -569,7 +569,7 @@
                 })
                 .catch(error => {
                     console.error('Error loading team players:', error);
-                    statusMessage.textContent = 'เนเธซเธฅเธ”เธเนเธญเธกเธนเธฅเธเธนเนเน€เธฅเนเธเนเธกเนเธชเธณเน€เธฃเนเธ เธเธฃเธธเธ“เธฒเธฅเธญเธเนเธซเธกเน';
+                    statusMessage.textContent = 'โหลดข้อมูลผู้เล่นไม่สำเร็จ กรุณาลองใหม่';
                 })
                 .finally(() => {
                     setPageLoading(false);
