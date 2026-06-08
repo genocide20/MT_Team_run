@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>อันดับ</title>
+    <title>เธญเธฑเธเธ”เธฑเธ</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -347,15 +347,15 @@
         <div class="nav-links">
             <a class="nav-link" href="index.html">
                 <svg class="icon icon-submit" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"></path><path d="m7 9 5-5 5 5"></path><path d="M20 16v4H4v-4"></path></svg>
-                <span>ส่งผล</span>
+                <span>เธชเนเธเธเธฅ</span>
             </a>
             <a class="nav-link active" href="team_rank.html">
                 <svg class="icon icon-rank" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"></path><path d="M5 5H3v2a4 4 0 0 0 4 4"></path><path d="M19 5h2v2a4 4 0 0 1-4 4"></path></svg>
-                <span>อันดับ</span>
+                <span>เธญเธฑเธเธ”เธฑเธ</span>
             </a>
             <a class="nav-link" href="https://mumt-happyorganization.netlify.app/">
                 <svg class="icon icon-score" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M7 16v-5"></path><path d="M12 16V7"></path><path d="M17 16v-8"></path></svg>
-                <span>คะแนน</span>
+                <span>เธเธฐเนเธเธ</span>
             </a>
         </div>
     </nav>
@@ -363,20 +363,20 @@
     <main class="container">
         <h1>
             <svg class="icon icon-rank" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"></path><path d="M5 5H3v2a4 4 0 0 0 4 4"></path><path d="M19 5h2v2a4 4 0 0 1-4 4"></path></svg>
-            <span>อันดับสะสมระยะทาง</span>
+            <span>เธญเธฑเธเธ”เธฑเธเธชเธฐเธชเธกเธฃเธฐเธขเธฐเธ—เธฒเธ</span>
         </h1>
         <div id="loadingState" class="loading-state" role="status" aria-live="polite">
             <div class="loading-spinner" aria-hidden="true"></div>
-            <span id="loadingText">กำลังโหลดอันดับ...</span>
+            <span id="loadingText">เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธญเธฑเธเธ”เธฑเธ...</span>
         </div>
         <div id="statusMessage" class="status-message"></div>
         <div id="rankList" class="rank-list"></div>
         <button id="refreshButton" class="refresh-button" type="button">
             <svg class="icon icon-refresh" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2"></path><path d="M3 12a9 9 0 0 1 15.5-6.2"></path><path d="M18 2v4h-4"></path><path d="M6 22v-4h4"></path></svg>
-            <span>โหลดใหม่</span>
+            <span>เนเธซเธฅเธ”เนเธซเธกเน</span>
         </button>
         <footer class="page-footer">
-            <p class="rank-hint">กดที่ชื่อทีมเพื่อดูสมาชิกทั้งหมด ระยะทางที่ทำได้</p>
+            <p class="rank-hint">เธเธ”เธ—เธตเนเธเธทเนเธญเธ—เธตเธกเน€เธเธทเนเธญเธ”เธนเธชเธกเธฒเธเธดเธเธ—เธฑเนเธเธซเธกเธ” เธฃเธฐเธขเธฐเธ—เธฒเธเธ—เธตเนเธ—เธณเนเธ”เน</p>
         </footer>
     </main>
 
@@ -389,12 +389,14 @@
         const loadingText = document.getElementById('loadingText');
         const defaultTeamImage = 'images/images_run.jpg';
         const teamImageMap = {
-            'ละมุน pace แต่ race เกินร้อย': 'images/S__29016248.jpg',
-            'ดิ อเวนเจอร์': 'images/avenger.jpg',
-            'พ่อบ้านเร่งฝีเท้า': 'images/S__158072845.jpg',
+            'เธฅเธฐเธกเธธเธ pace เนเธ•เน race เน€เธเธดเธเธฃเนเธญเธข': 'images/S__29016248.jpg',
+            'เธ”เธด เธญเน€เธงเธเน€เธเธญเธฃเน': 'images/avenger.jpg',
+            'เธเนเธญเธเนเธฒเธเน€เธฃเนเธเธเธตเน€เธ—เนเธฒ': 'images/S__158072845.jpg',
             'Runaway V2': 'images/runaway.png',
             'Run Tum Mile': 'images/runtummile.png',
-            'ระยะนี้ผ่านความเห็นชอบ': 'images/natchaya.png'
+            'ชื่อทีมไม่มีผล': 'images/IT.png',
+            'เธเธเธเธฑเนเธเธเธฃเนเธเธฅเธ': 'images/IMG_7271.jpeg',
+            'เธฃเธฐเธขเธฐเธเธตเนเธเนเธฒเธเธเธงเธฒเธกเน€เธซเนเธเธเธญเธ': 'images/natchaya.png'
         };
 
         function toNumber(value) {
@@ -408,11 +410,11 @@
         }
 
         function getRankIcon(rank) {
-            const keycapIcons = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+            const keycapIcons = ['1๏ธโฃ', '2๏ธโฃ', '3๏ธโฃ', '4๏ธโฃ', '5๏ธโฃ', '6๏ธโฃ', '7๏ธโฃ', '8๏ธโฃ', '9๏ธโฃ', '๐”'];
             if (rank >= 1 && rank <= 10) {
                 return keycapIcons[rank - 1];
             }
-            return '🏅' + rank;
+            return '๐…' + rank;
         }
 
         function normalizeRankData(rows) {
@@ -439,7 +441,7 @@
             rankList.innerHTML = '';
 
             if (!rankings.length) {
-                statusMessage.textContent = 'ยังไม่มีข้อมูลอันดับ';
+                statusMessage.textContent = 'เธขเธฑเธเนเธกเนเธกเธตเธเนเธญเธกเธนเธฅเธญเธฑเธเธ”เธฑเธ';
                 return;
             }
 
@@ -451,7 +453,7 @@
                 const teamUrl = 'team_player.html?team=' + encodeURIComponent(team.team_name);
                 row.setAttribute('role', 'link');
                 row.setAttribute('tabindex', '0');
-                row.setAttribute('aria-label', 'ดูรายชื่อสมาชิกทีม ' + team.team_name);
+                row.setAttribute('aria-label', 'เธ”เธนเธฃเธฒเธขเธเธทเนเธญเธชเธกเธฒเธเธดเธเธ—เธตเธก ' + team.team_name);
                 row.addEventListener('click', () => {
                     window.location.href = teamUrl;
                 });
@@ -473,7 +475,7 @@
                 const teamPhoto = document.createElement('img');
                 teamPhoto.className = 'team-photo';
                 teamPhoto.src = getTeamImage(team.team_name);
-                teamPhoto.alt = 'รูปทีม ' + team.team_name;
+                teamPhoto.alt = 'เธฃเธนเธเธ—เธตเธก ' + team.team_name;
                 teamPhoto.loading = 'lazy';
 
                 const distance = document.createElement('div');
@@ -489,7 +491,7 @@
 
         function setPageLoading(isLoading, message) {
             loadingState.hidden = !isLoading;
-            loadingText.textContent = message || 'กำลังโหลดอันดับ...';
+            loadingText.textContent = message || 'เธเธณเธฅเธฑเธเนเธซเธฅเธ”เธญเธฑเธเธ”เธฑเธ...';
             refreshButton.disabled = isLoading;
         }
 
@@ -506,7 +508,7 @@
                 })
                 .catch(error => {
                     console.error('Error loading team rankings:', error);
-                    statusMessage.textContent = 'โหลดอันดับไม่สำเร็จ กรุณาลองใหม่';
+                    statusMessage.textContent = 'เนเธซเธฅเธ”เธญเธฑเธเธ”เธฑเธเนเธกเนเธชเธณเน€เธฃเนเธ เธเธฃเธธเธ“เธฒเธฅเธญเธเนเธซเธกเน';
                 })
                 .finally(() => {
                     setPageLoading(false);
